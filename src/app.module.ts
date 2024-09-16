@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -10,7 +11,6 @@ import { ReviewModule } from './review/review.module';
 import { AddressModule } from './address/address.module';
 import { TagModule } from './tag/tag.module';
 import { CategoryModule } from './category/category.module';
-
 import { User } from './user/entities/user.entity';
 import { Order } from './order/entities/order.entity';
 import { Product } from './product/entities/product.entity';
@@ -23,24 +23,31 @@ import { BrandModule } from './brand/brand.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '0',
-      database: 'notopia',
-      entities: [
-        User,
-        Order,
-        Product,
-        Voucher,
-        Review,
-        Address,
-        Tag,
-        Category,
-      ],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DATABASE_HOST'),
+        port: configService.get<number>('DATABASE_PORT'),
+        username: configService.get('DATABASE_USERNAME'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE_NAME'),
+        entities: [
+          User,
+          Order,
+          Product,
+          Voucher,
+          Review,
+          Address,
+          Tag,
+          Category,
+        ],
+        synchronize: true,
+      }),
     }),
     UserModule,
     OrderModule,
