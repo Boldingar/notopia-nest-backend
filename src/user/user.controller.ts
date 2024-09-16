@@ -14,7 +14,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'The user has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
-  @ApiBody({ type: CreateUserDto }) // Document the body input
+  @ApiBody({ type: CreateUserDto })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }

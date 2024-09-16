@@ -11,6 +11,7 @@ import { ReviewModule } from './review/review.module';
 import { AddressModule } from './address/address.module';
 import { TagModule } from './tag/tag.module';
 import { CategoryModule } from './category/category.module';
+
 import { User } from './user/entities/user.entity';
 import { Order } from './order/entities/order.entity';
 import { Product } from './product/entities/product.entity';
@@ -36,6 +37,9 @@ import { BrandModule } from './brand/brand.module';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
+        ssl: {
+          rejectUnauthorized: false, // You may need to adjust this depending on your SSL setup
+        },
         entities: [
           User,
           Order,
