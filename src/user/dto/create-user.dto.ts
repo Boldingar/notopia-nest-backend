@@ -8,14 +8,14 @@ export class CreateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  first_name: string;
+  firstName: string;
 
   @ApiProperty({
     example: 'Doe',
   })
   @IsString()
   @IsNotEmpty()
-  last_name: string;
+  lastName: string;
 
   @ApiProperty({
     example: '+1234567890',
@@ -36,7 +36,7 @@ export class CreateUserDto {
   })
   @IsDateString()
   @IsNotEmpty()
-  date_of_birth: Date;
+  dateOfBirth: Date;
 
   @ApiProperty({
     example: 'Male',

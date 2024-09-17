@@ -9,7 +9,7 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsString()
-  first_name?: string;
+  firstName?: string;
 
   @ApiProperty({
     example: 'Doe',
@@ -17,7 +17,7 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsString()
-  last_name?: string;
+  lastName?: string;
 
   @ApiProperty({
     example: '+1234567890',
@@ -41,7 +41,7 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsDateString()
-  date_of_birth?: Date;
+  dateOfBirth?: Date;
 
   @ApiProperty({
     example: 'Male',

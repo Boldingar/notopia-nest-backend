@@ -8,11 +8,11 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 100 })
-  first_name: string;
+  @Column({ length: 20 })
+  firstName: string;
 
-  @Column({ length: 100 })
-  last_name: string;
+  @Column({ length: 20 })
+  lastName: string;
 
   @Column({ length: 15 })
   phone: string;
@@ -21,7 +21,7 @@ export class User {
   password: string;
 
   @Column({ type: 'date' })
-  date_of_birth: Date;
+  dateOfBirth: Date;
 
   @Column({ length: 10 })
   gender: string;
