@@ -3,20 +3,20 @@ import { IsString, IsNumber, IsArray, IsOptional, IsDecimal, IsUUID } from 'clas
 
 export class UpdateProductDto {
   @ApiProperty({
+    example: 'Updated Product Name',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty({
     example: 'Updated Product Description',
     required: false,
   })
   @IsOptional()
   @IsString()
   description?: string;
-
-  @ApiProperty({
-    example: 15.00,
-    required: false,
-  })
-  @IsOptional()
-  @IsDecimal({ decimal_digits: '2', force_decimal: true })
-  discountPercentage?: number;
 
   @ApiProperty({
     example: [
@@ -32,12 +32,20 @@ export class UpdateProductDto {
   imagesUrl?: string[]; // Optional field for images URLs
 
   @ApiProperty({
-    example: 'Updated Product Name',
+    example: 249.99,
     required: false,
   })
   @IsOptional()
-  @IsString()
-  name?: string;
+  @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  price?: number;
+
+  @ApiProperty({
+    example: 15.00,
+    required: false,
+  })
+  @IsOptional()
+  @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  discountPercentage?: number;
 
   @ApiProperty({
     example: 200,
@@ -46,14 +54,6 @@ export class UpdateProductDto {
   @IsOptional()
   @IsNumber()
   numberOfSales?: number;
-
-  @ApiProperty({
-    example: 249.99,
-    required: false,
-  })
-  @IsOptional()
-  @IsDecimal({ decimal_digits: '2', force_decimal: true })
-  price?: number;
 
   @ApiProperty({
     example: 30,
