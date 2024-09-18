@@ -19,13 +19,20 @@ export class CategoryController {
   }
 
   @ApiOperation({ summary: 'Get all categories' })
-  @ApiResponse({ status: 200, description: 'List of all categories' })
+  @ApiResponse({ status: 200, description: 'List of all categories without products' })
   @Get()
   findAll() {
+    return this.categoryService.findCategories();
+  }
+
+  @ApiOperation({ summary: 'Get all categories with products' })
+  @ApiResponse({ status: 200, description: 'List of all categories without products' })
+  @Get('/details')
+  findAllDetails() {
     return this.categoryService.findAll();
   }
 
-  @ApiOperation({ summary: 'Get a category by ID' })
+  @ApiOperation({ summary: 'Get a detailed category by ID' })
   @ApiResponse({ status: 200, description: 'Category found' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
@@ -34,12 +41,21 @@ export class CategoryController {
     return this.categoryService.findOne(id);
   }
 
+  @ApiOperation({ summary: 'Get products of a category by ID' })
+  @ApiResponse({ status: 200, description: 'List of products in the specified category' })
+  @ApiResponse({ status: 404, description: 'Category not found' })
+  @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
+  @Get(':id/products')
+  findProducts(@Param('id') id: string) {
+    return this.categoryService.findProducts(id);
+  }
+
   @ApiOperation({ summary: 'Update a category' })
   @ApiResponse({ status: 200, description: 'The category has been successfully updated.' })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
   @Patch(':id')
-  @ApiBody({ type: UpdateCategoryDto }) // Document the body input for the update
+  @ApiBody({ type: UpdateCategoryDto })
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     return this.categoryService.update(id, updateCategoryDto);
   }
