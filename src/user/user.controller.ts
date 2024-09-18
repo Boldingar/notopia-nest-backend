@@ -1,9 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, NotFoundException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
-import { UserService } from './user.service';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { UserService } from './user.service';
 
 @ApiTags('user') // Group the controller under 'user' in Swagger UI
 @Controller('user')
@@ -17,6 +16,27 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @ApiOperation({ summary: 'Get the number of users who already ordered once' })
+  @ApiResponse({ status: 200, description: 'Number and percentage of users who already ordered once.' })
+  @Get('orderedUsersPercentage')
+  async getOrderedUsersPercentage(): Promise<{ orderedUsersCount: number; percentage: number }> {
+    const { orderedUsersCount, totalCustomersCount } = await this.userService.getOrderedUsersPercentage();
+
+    const percentage = totalCustomersCount > 0 
+    ? parseFloat(((orderedUsersCount / totalCustomersCount) * 100).toFixed(2))
+    : 0;
+    
+    return { orderedUsersCount, percentage };
+  }
+
+  @ApiOperation({ summary: 'Get total number of customers' })
+  @ApiResponse({ status: 200, description: 'Total number of customers' })
+  @Get('totalCustomers')
+  async getTotalCustomers(): Promise<{ totalCustomers: number }> {
+    const totalCustomers = await this.userService.getTotalCustomers();
+    return { totalCustomers };
   }
 
   @ApiOperation({ summary: 'Get all users' })

@@ -136,6 +136,22 @@ export class UserService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    return user.cart;  // Return the products in the cart
+    return user.cart;  
+  }
+
+  async getTotalCustomers(): Promise<number> {
+    return this.userRepository.count({ where: { flag: 'customer' } });
+  }
+
+  async getOrderedUsersPercentage(): Promise<{ orderedUsersCount: number; totalCustomersCount: number }> {
+    const totalCustomersCount = await this.getTotalCustomers();
+    
+    const orderedUsersCount = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.orders', 'order')
+      .where('user.flag = :flag', { flag: 'customer' })
+      .getCount();
+
+    return { orderedUsersCount, totalCustomersCount };
   }
 }

@@ -26,6 +26,15 @@ export class User {
   @Column({ length: 10 })
   gender: string;
 
+  @Column({
+    type: 'enum',
+    enum: ['customer', 'admin'],
+    nullable: true,
+    default: 'customer'
+  })
+  flag: 'customer' | 'admin'; 
+
+
   @ManyToMany(() => Product)
   @JoinTable()
   cart: Product[]; // Establish the many-to-many relationship with Product for cart
@@ -46,3 +55,4 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
