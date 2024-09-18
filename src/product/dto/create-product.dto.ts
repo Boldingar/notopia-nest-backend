@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNumber, IsArray, IsOptional, IsDecimal, IsUUID } from 'class-validator';
 
 export class CreateProductDto {
-
   @ApiProperty({
     example: 'Product Name',
   })
@@ -16,18 +15,23 @@ export class CreateProductDto {
   description: string;
 
   @ApiProperty({
-    example: [
-      'http://example.com/image1.jpg',
-      'http://example.com/image2.jpg',
-    ],
-    type: [String],
+    example: 'http://example.com/image3.jpg',
     required: false,
   })
   @IsOptional()
+  @IsString()
+  mainImage?: string;
+
+  @ApiProperty({
+    example: ['http://example.com/image1.jpg', 'http://example.com/image2.jpg'],
+    type: [String],
+    required: false,
+  })
   @IsArray()
   @IsString({ each: true })
-  imagesUrl?: string[]; // Optional field for images URLs
-  
+  @IsOptional()
+  images?: string[];
+
   @ApiProperty({
     example: 199.99,
   })
@@ -35,7 +39,7 @@ export class CreateProductDto {
   price: number;
 
   @ApiProperty({
-    example: 10.00,
+    example: 10.0,
   })
   @IsDecimal({ decimal_digits: '2', force_decimal: true })
   discountPercentage: number;
@@ -45,19 +49,17 @@ export class CreateProductDto {
   })
   @IsNumber()
   numberOfSales: number;
-  
+
   @ApiProperty({
     example: 25,
   })
   @IsNumber()
   stock: number;
-
   @ApiProperty({
-    example: 100.00,
+    example: 100.0,
   })
   @IsDecimal({ decimal_digits: '2', force_decimal: true })
   cost: number;
-
   @ApiProperty({
     example: 'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
   })

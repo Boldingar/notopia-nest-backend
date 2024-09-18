@@ -7,29 +7,32 @@ export class Product {
   id: string;
 
   @Column({ length: 100 })
-  name: string;
-
-  @Column({ length: 100 })
   description: string;
-
-  @Column('decimal', { precision: 10, scale: 2 })
-  price: number;
 
   @Column('decimal', { precision: 5, scale: 2 })
   discountPercentage: number;
 
-  @Column('text', { array: true, default: [] })
-  imagesUrl: string[];
+  @Column('text', { nullable: true })
+  mainImage: string;
+
+  @Column('text', { array: true, default: [], nullable: true })
+  images: string[];
+
+  @Column({ length: 100 })
+  name: string;
 
   @Column('int')
   numberOfSales: number;
 
+  @Column('decimal', { precision: 10, scale: 2 })
+  price: number;
+
   @Column('int')
   stock: number;
 
-  @Column('decimal')
+  @Column({ type: 'decimal', nullable: true, precision: 10, scale: 2 })
   cost: number;
-
-  @ManyToOne(() => Category, category => category.products)
+  
+  @ManyToOne(() => Category, (category) => category.products)
   category: Category;
 }
