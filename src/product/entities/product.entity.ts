@@ -7,7 +7,13 @@ export class Product {
   id: string;
 
   @Column({ length: 100 })
+  name: string;
+
+  @Column({ length: 100 })
   description: string;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  price: number;
 
   @Column('decimal', { precision: 5, scale: 2 })
   discountPercentage: number;
@@ -15,17 +21,14 @@ export class Product {
   @Column('text', { array: true, default: [] })
   imagesUrl: string[];
 
-  @Column({ length: 100 })
-  name: string;
-
   @Column('int')
   numberOfSales: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
-  price: number;
-
   @Column('int')
   stock: number;
+
+  @Column('decimal')
+  cost: number;
 
   @ManyToOne(() => Category, category => category.products)
   category: Category;

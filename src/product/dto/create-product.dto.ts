@@ -53,6 +53,12 @@ export class CreateProductDto {
   stock: number;
 
   @ApiProperty({
+    example: 100.00,
+  })
+  @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  cost: number;
+
+  @ApiProperty({
     example: 'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
   })
   @IsUUID('4')
