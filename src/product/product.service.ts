@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -86,4 +86,15 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
+
+  async searchProductsByName(name: string): Promise<Product[]> {
+    try {
+      return await this.productRepository.find({
+        where: { name: ILike(`%${name}%`) },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to search products');
+    }
+  }
+
 }

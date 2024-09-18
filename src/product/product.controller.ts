@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, NotFoundException, InternalServerErrorException, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Product } from './entities/product.entity';
+
 
 @ApiTags('product') // Group the controller under 'product' in Swagger UI
 @Controller('product')
@@ -52,4 +54,15 @@ export class ProductController {
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
+
+  @ApiOperation({ summary: 'Search products by name' })
+  @ApiResponse({ status: 200, description: 'List of products matching the search name', type: [Product] })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiParam({ name: 'search', required: true, description: 'Name to search for products' })
+  @Get('search/:search')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  search(@Param('search') name: string): Promise<Product[]> {
+    return this.productService.searchProductsByName(name);
+  }
+
 }
