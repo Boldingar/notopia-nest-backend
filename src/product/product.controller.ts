@@ -23,11 +23,13 @@ import { BadRequestException } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import { join } from 'path';
 
 // Multer storage configuration
+
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/images/product');
+    cb(null, join(__dirname, '..', 'images', 'product')); // Absolute path based on current directory
   },
   filename: (req, file, cb) => {
     const ext = file.mimetype.split('/')[1];
@@ -56,10 +58,10 @@ export class ProductController {
       throw new BadRequestException('No images uploaded');
     }
 
-    const mainImagePath = `public/images/product/${files[0].filename}`;
+    const mainImagePath = `/images/product/${files[0].filename}`;
     const imagePaths = files
       .slice(1)
-      .map((file) => `public/images/product/${file.filename}`);
+      .map((file) => `/images/product/${file.filename}`);
 
     // Assign mainImage and images to DTO
     createProductDto.mainImage = mainImagePath;
@@ -101,10 +103,10 @@ export class ProductController {
       throw new BadRequestException('No images uploaded');
     }
 
-    const mainImagePath = `public/images/product/${files[0].filename}`;
+    const mainImagePath = `/images/product/${files[0].filename}`;
     const imagePaths = files
       .slice(1)
-      .map((file) => `public/images/product/${file.filename}`);
+      .map((file) => `/images/product/${file.filename}`);
 
     // Assign mainImage and images to DTO
     updateProductDto.mainImage = mainImagePath;
