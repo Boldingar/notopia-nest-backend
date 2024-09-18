@@ -86,4 +86,15 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
+
+  async findTopSellingProducts(): Promise<{ productName: string; numberOfSales: number }[]> {
+    const products = await this.productRepository.find();
+  
+    const sortedProducts = products.sort((a, b) => b.numberOfSales - a.numberOfSales);
+  
+    return sortedProducts.map((product) => ({
+      productName: product.name,
+      numberOfSales: product.numberOfSales || 0, 
+    }));
+  }
 }

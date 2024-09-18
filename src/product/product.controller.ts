@@ -17,7 +17,14 @@ export class ProductController {
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
-
+  
+  @ApiOperation({ summary: 'Get top-selling products' })
+  @ApiResponse({ status: 200, description: 'Products ranked by number of sales' })
+  @Get('topSelling')
+  async findTopSellingProducts(): Promise<{ productName: string; numberOfSales: number }[]> {
+    return this.productService.findTopSellingProducts();
+  }
+  
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, description: 'List of all products' })
   @Get()
@@ -52,4 +59,5 @@ export class ProductController {
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
+
 }

@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
+import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
@@ -67,5 +70,28 @@ export class CategoryService {
 
   async remove(id: string): Promise<void> {
     await this.categoryRepository.delete(id);
+  }
+
+  async findTopSellingCategories(): Promise<{ categoryName: string; totalSales: number }[]> {
+    const categories = await this.categoryRepository.find();
+  
+    const categoriesWithSales = await Promise.all(
+      categories.map(async (category) => {
+        const totalSales = await this.productRepository
+          .createQueryBuilder('product')
+          .where('product.categoryId = :categoryId', { categoryId: category.id })
+          .select('SUM(product.numberOfSales)', 'totalSales')
+          .getRawOne();
+  
+          return {
+            categoryName: category.categoryName,
+            totalSales: parseInt(totalSales.totalSales, 10) || 0, 
+          };
+      }),
+    );
+  
+    categoriesWithSales.sort((a, b) => b.totalSales - a.totalSales);
+  
+    return categoriesWithSales;
   }
 }
