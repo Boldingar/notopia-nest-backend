@@ -8,6 +8,8 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +26,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
+import { Product } from './entities/product.entity';
 
 // Multer storage configuration
 
