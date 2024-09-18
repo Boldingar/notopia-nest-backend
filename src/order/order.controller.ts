@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/s
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { Order } from './entities/order.entity';
 
 @ApiTags('order') // Group the controller under 'order' in Swagger UI
 @Controller('order')
@@ -51,5 +52,14 @@ export class OrderController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.orderService.remove(id);
+  }
+
+  @ApiOperation({ summary: 'Get orders by user ID' })
+  @ApiResponse({ status: 200, description: 'List of orders', type: [Order] })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'userId', type: String, required: true, description: 'User ID' })
+  @Get('user/:userId')
+  getOrdersByUserId(@Param('userId') userId: string): Promise<Order[]> {
+    return this.orderService.findOrdersByUserId(userId);
   }
 }

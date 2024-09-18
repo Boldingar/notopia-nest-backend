@@ -3,6 +3,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/s
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { Address } from './entities/address.entity';
+
 
 @ApiTags('address') // Group the controller under 'address' in Swagger UI
 @Controller('address')
@@ -51,5 +53,14 @@ export class AddressController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.addressService.remove(id);
+  }
+
+  @ApiOperation({ summary: 'Get addresses by user ID' })
+  @ApiResponse({ status: 200, description: 'List of addresses', type: [Address] })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'userId', type: String, required: true, description: 'User ID' })
+  @Get('user/:userId')
+  getAddressesByUserId(@Param('userId') userId: string): Promise<Address[]> {
+    return this.addressService.findAddressesByUserId(userId);
   }
 }
