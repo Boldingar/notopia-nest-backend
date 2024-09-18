@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, NotFoundException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -71,8 +71,12 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User or address not found.' })
   @ApiResponse({ status: 400, description: 'Some products are out of stock.' })
   @Post(':userId/checkout')
-  async checkOut(@Param('userId') userId: string) {
-    return this.userService.checkOut(userId);
+  @ApiQuery({ name: 'voucherName', type: String, required: false, description: 'Optional voucher name to apply a discount' })
+  async checkOut(
+    @Param('userId') userId: string,
+    @Query('voucherName') voucherName?: string
+  ) {
+    return this.userService.checkOut(userId, voucherName);
   }
 
   // New route to get all products in the user's cart

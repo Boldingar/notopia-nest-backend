@@ -7,6 +7,7 @@ import { User } from './entities/user.entity';
 import { Product } from '../product/entities/product.entity';
 import { Order } from '../order/entities/order.entity';
 import { Address } from '../address/entities/address.entity';
+import { Voucher } from 'src/voucher/entities/voucher.entity';
 
 @Injectable()
 export class UserService {
@@ -17,8 +18,8 @@ export class UserService {
     private productRepository: Repository<Product>,
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
-    @InjectRepository(Address)
-    private addressRepository: Repository<Address>,
+    @InjectRepository(Voucher)
+    private voucherRepository: Repository<Voucher>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -95,7 +96,7 @@ export class UserService {
     return { message: `Item added successfully`, totalPrice };
   }
   
-  async checkOut(userId: string): Promise<Order> {
+  async checkOut(userId: string, voucherName?: string): Promise<Order> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['cart', 'addresses'],
@@ -120,7 +121,8 @@ export class UserService {
       throw new BadRequestException('Some products are out of stock');
     }
   
-    const totalPrice = products.reduce((sum, product) => {
+    // Calculate the total price
+    let totalPrice = products.reduce((sum, product) => {
       const discount = product.discountPercentage || 0;
       const effectivePrice = discount > 0
         ? product.price - (product.price * (discount / 100))
@@ -129,12 +131,33 @@ export class UserService {
       return sum + effectivePrice;
     }, 0);
   
-    const order = this.orderRepository.create({ 
+    // Apply voucher discount if provided
+    if (voucherName) {
+      const voucher = await this.voucherRepository.findOne({ where: { name: voucherName } });
+  
+      if (voucher) {
+        if (voucher.discountPercentage) {
+          // Apply percentage discount
+          totalPrice -= totalPrice * (voucher.discountPercentage / 100);
+        } else if (voucher.discountValue) {
+          // Apply fixed value discount
+          totalPrice -= voucher.discountValue;
+        }
+      }
+    }
+  
+    // Ensure the totalPrice does not go below zero
+    totalPrice = Math.max(totalPrice, 0);
+  
+    user.cart = [];
+    await this.userRepository.save(user);
+
+    const order = this.orderRepository.create({
       user,
       products,
       cost: totalPrice,
       status: 'Pending',
-     });
+    });
 
     await this.orderRepository.save(order);
   
@@ -144,12 +167,8 @@ export class UserService {
       await this.productRepository.save(product);
     }
   
-    // Clear the cart
-    user.cart = [];
-    await this.userRepository.save(user);
-  
     return order;
-  }
+  }  
   
   async getCartProducts(userId: string): Promise<Product[]> {
     const user = await this.userRepository.findOne({
