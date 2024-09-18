@@ -21,9 +21,15 @@ import { Address } from './address/entities/address.entity';
 import { Tag } from './tag/entities/tag.entity';
 import { Category } from './category/entities/category.entity';
 import { BrandModule } from './brand/brand.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'src', 'images'), // path to your images folder // Points to src/images
+      serveRoot: '/images', // this is how the path will appear in the URL
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

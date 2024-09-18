@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -16,25 +21,29 @@ export class ProductService {
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const { categoryId, ...productData } = createProductDto;
+    try {
+      const { categoryId, images, ...productData } = createProductDto;
 
-    // Find the category associated with the product
-    const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
 
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      if (!category) {
+        throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      }
+
+      const product = this.productRepository.create({
+        ...productData,
+        category,
+        images,
+      });
+
+      return await this.productRepository.save(product);
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw new BadRequestException('Failed to create product');
     }
-
-    // Create a new product instance
-    const product = this.productRepository.create({
-      ...productData,
-      category,
-    });
-
-    // Save the product to the database
-    return this.productRepository.save(product);
   }
-
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({ relations: ['category'] });
   }
@@ -52,13 +61,17 @@ export class ProductService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
-    const { categoryId, ...updateData } = updateProductDto;
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    const { categoryId, images, ...updateData } = updateProductDto;
 
     // Find the existing product
     const product = await this.productRepository.preload({
       id,
       ...updateData,
+      images,
     });
 
     if (!product) {
@@ -67,7 +80,9 @@ export class ProductService {
 
     // If a new category is provided, find it and update the product's category
     if (categoryId) {
-      const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
 
       if (!category) {
         throw new NotFoundException(`Category with ID ${categoryId} not found`);
