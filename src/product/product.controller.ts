@@ -32,7 +32,7 @@ import { Product } from './entities/product.entity';
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, join(__dirname, '..', 'images', 'product')); // Absolute path based on current directory
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'product')); // Absolute path to images/product
   },
   filename: (req, file, cb) => {
     const ext = file.mimetype.split('/')[1];
