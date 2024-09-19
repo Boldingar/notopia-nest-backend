@@ -10,6 +10,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { validate as uuidValidate } from 'uuid';
 
 @Injectable()
 export class ProductService {
@@ -22,12 +23,8 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      const {
-        categoryIds,
-        images,
-        linkedProducts,
-        ...productData
-      } = createProductDto;
+      const { categoryIds, images, linkedProducts, ...productData } =
+        createProductDto;
 
       // Fetch the categories
       const categories = await this.categoryRepository.find({
@@ -59,7 +56,6 @@ export class ProductService {
       throw new BadRequestException('Failed to create product');
     }
   }
-
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
       relations: ['categories', 'linkedProducts'], // Include relationships
@@ -83,14 +79,9 @@ export class ProductService {
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const {
-      categoryIds,
-      images,
-      linkedProducts,
-      ...updateData
-    } = updateProductDto;
+    const { categoryIds, images, linkedProducts, ...updateData } =
+      updateProductDto;
 
-    // Find the existing product
     const product = await this.productRepository.preload({
       id,
       ...updateData,
@@ -106,7 +97,6 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    // Update categories if provided
     if (categoryIds) {
       const categories = await this.categoryRepository.find({
         where: { id: In(categoryIds) },
@@ -130,10 +120,14 @@ export class ProductService {
     }
   }
 
-  async findTopSellingProducts(): Promise<{ productName: string; numberOfSales: number }[]> {
+  async findTopSellingProducts(): Promise<
+    { productName: string; numberOfSales: number }[]
+  > {
     const products = await this.productRepository.find();
 
-    const sortedProducts = products.sort((a, b) => b.numberOfSales - a.numberOfSales);
+    const sortedProducts = products.sort(
+      (a, b) => b.numberOfSales - a.numberOfSales,
+    );
 
     return sortedProducts.map((product) => ({
       productName: product.name,

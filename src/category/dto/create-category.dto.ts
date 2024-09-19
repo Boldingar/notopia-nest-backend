@@ -10,11 +10,11 @@ export class CreateCategoryDto {
   categoryName: string;
 
   @ApiProperty({
-    example: 'https://example.com/image.png',
-    description: 'Optional URL for the category image',
+    type: 'string',
+    format: 'binary',
+    description: 'Category image file',
     required: false,
   })
   @IsOptional()
-  @IsString()
   categoryImgUrl?: string;
 }

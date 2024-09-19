@@ -38,7 +38,7 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   cost: number;
 
-  @Column({ length: 50, unique: true})
+  @Column({ length: 50, unique: true,nullable:true})
   barcode: string;
 
   @ManyToMany(() => Category, (category) => category.products)
