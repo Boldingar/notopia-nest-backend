@@ -21,6 +21,7 @@ import { Address } from './address/entities/address.entity';
 import { Tag } from './tag/entities/tag.entity';
 import { Category } from './category/entities/category.entity';
 import { BrandModule } from './brand/brand.module';
+import { DeliveryModule } from './delivery/delivery.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { BrandModule } from './brand/brand.module';
     TagModule,
     CategoryModule,
     BrandModule,
+    DeliveryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

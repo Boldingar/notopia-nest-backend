@@ -1,5 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -10,7 +24,10 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({ status: 201, description: 'The product has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The product has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
   @ApiBody({ type: CreateProductDto }) // Document the body input
@@ -35,13 +52,22 @@ export class ProductController {
   }
 
   @ApiOperation({ summary: 'Update a product' })
-  @ApiResponse({ status: 200, description: 'The product has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @Patch(':id')
   @ApiBody({ type: UpdateProductDto }) // Document the body input for the update
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(id, updateProductDto);
+  }
+
+  // Route to get all products with a discount greater than 30%
+  @Get('discount-greater-than-30')
+  findAllWithDiscountGreaterThan30() {
+    return this.productService.findAllWithDiscountGreaterThan30();
   }
 
   @ApiOperation({ summary: 'Delete a product' })

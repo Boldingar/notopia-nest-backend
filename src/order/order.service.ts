@@ -46,7 +46,6 @@ export class OrderService {
       products,
       cost,
       status,
-      date: new Date(), // Set the date to the current time
     });
   
     // Save the order to the database

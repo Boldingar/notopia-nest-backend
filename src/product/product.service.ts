@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -19,7 +19,9 @@ export class ProductService {
     const { categoryId, ...productData } = createProductDto;
 
     // Find the category associated with the product
-    const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+    const category = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+    });
 
     if (!category) {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
@@ -39,6 +41,13 @@ export class ProductService {
     return this.productRepository.find({ relations: ['category'] });
   }
 
+  // Method to get all products with a discount greater than 30%
+  async findAllWithDiscountGreaterThan30(): Promise<Product[]> {
+    return this.productRepository.find({
+      where: { discountPercentage: MoreThan(30) } // Only return products with discount > 30
+    });
+  }
+
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
@@ -52,7 +61,10 @@ export class ProductService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     const { categoryId, ...updateData } = updateProductDto;
 
     // Find the existing product
@@ -67,7 +79,9 @@ export class ProductService {
 
     // If a new category is provided, find it and update the product's category
     if (categoryId) {
-      const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
 
       if (!category) {
         throw new NotFoundException(`Category with ID ${categoryId} not found`);

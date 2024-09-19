@@ -7,11 +7,13 @@ import { UserModule } from '../user/user.module'; // Circular dependency
 import { ProductModule } from '../product/product.module';
 import { Product } from 'src/product/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
+import { DeliveryModule } from 'src/delivery/delivery.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, Product, User]),
     forwardRef(() => UserModule), // Use forwardRef here
+    forwardRef(() => DeliveryModule), 
     ProductModule,
   ],
   controllers: [OrderController],
@@ -19,3 +21,4 @@ import { User } from 'src/user/entities/user.entity';
   exports: [OrderService],
 })
 export class OrderModule {}
+

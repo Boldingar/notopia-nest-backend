@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsDateString,IsEnum, IsOptional, IsArray } from 'class-validator';
 import { Product } from 'src/product/entities/product.entity';
 
 export class UpdateUserDto {
@@ -50,6 +50,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   gender?: string;
+
+  @ApiProperty({
+    example: 'Customer',
+    required:false,
+  })
+  @IsEnum(['customer', 'admin'])
+  @IsOptional()
+  flag?: 'customer' | 'admin';
 
   @ApiProperty({
     example: [

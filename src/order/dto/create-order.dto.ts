@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsArray, IsUUID, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsUUID,
+  IsOptional,
+  IsDate
+} from 'class-validator';
+import { Delivery } from 'src/delivery/entities/delivery.entity';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -12,7 +20,7 @@ export class CreateOrderDto {
   @ApiProperty({
     example: [
       'b1d85e3e-1c2b-4e1e-b6a6-8c8d0e65c4d8',
-      'a3c95e4f-2d6b-4e1e-b6a6-8c8d0e65c4d9'
+      'a3c95e4f-2d6b-4e1e-b6a6-8c8d0e65c4d9',
     ],
     description: 'Array of product IDs',
     type: [String],
@@ -37,9 +45,13 @@ export class CreateOrderDto {
 
   @ApiProperty({
     example: '2024-09-15T10:30:00Z',
-    description: 'Date of the order (optional, auto-generated)',
+    description: 'Delivery date of the order',
     required: false,
   })
+  @IsDate()
   @IsOptional()
-  date?: Date;
+  deliveredAt?: Date;
+
+  @IsOptional()
+  deliveryMan?: Delivery;
 }
