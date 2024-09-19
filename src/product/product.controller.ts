@@ -86,6 +86,20 @@ export class ProductController {
     return this.productService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get Main products' })
+  @ApiResponse({ status: 200, description: 'List of all products' })
+  @Get('main')
+  findMain() {
+    return this.productService.findMain();
+  }
+
+  @ApiOperation({ summary: 'Get Side products' })
+  @ApiResponse({ status: 200, description: 'List of all products' })
+  @Get('side')
+  findSide() {
+    return this.productService.findSide();
+  }
+
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiResponse({ status: 200, description: 'Product found' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -94,6 +108,16 @@ export class ProductController {
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
   }
+
+  @ApiOperation({ summary: 'Get linked products by product ID' })
+  @ApiResponse({ status: 200, description: 'Product found' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Get('linked/:id')
+  findLinkedProducts(@Param('id') id: string) {
+    return this.productService.findLinkedProducts(id);
+  }
+
   @ApiOperation({ summary: 'Update a product' })
   @ApiResponse({
     status: 200,

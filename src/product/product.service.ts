@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, In } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
+import { Product, ProductType } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
 
 @Injectable()
@@ -62,14 +62,28 @@ export class ProductService {
 
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
-      relations: ['categories', 'linkedProducts'], // Include relationships
+      relations: ['categories', 'linkedProducts'],
+    });
+  }
+
+  async findMain(): Promise<Product[]> {
+    return this.productRepository.find({
+      where: { type: ProductType.MAIN },
+      relations: ['categories', 'linkedProducts'],
+    });
+  }
+
+  async findSide(): Promise<Product[]> {
+    return this.productRepository.find({
+      where: { type: ProductType.SIDE },
+      relations: ['categories', 'linkedProducts'],
     });
   }
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['categories', 'linkedProducts'], // Include relationships
+      relations: ['categories', 'linkedProducts'],
     });
 
     if (!product) {
@@ -77,6 +91,24 @@ export class ProductService {
     }
 
     return product;
+  }
+
+  async findLinkedProducts(productId: string): Promise<Product[]> {
+    try {
+      const product = await this.productRepository.findOne({
+        where: { id: productId },
+        relations: ['linkedProducts'],
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${productId} not found`);
+      }
+
+      return product.linkedProducts;
+    } catch (error) {
+      console.error('Error finding linked products:', error);
+      throw new InternalServerErrorException('Failed to find linked products');
+    }
   }
 
   async update(
