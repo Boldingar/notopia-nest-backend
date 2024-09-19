@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsDateString, IsNotEmpty,IsEnum, IsOptional, IsArray } from 'class-validator';
 import { Product } from 'src/product/entities/product.entity';
 
 export class CreateUserDto {
@@ -46,6 +46,13 @@ export class CreateUserDto {
   gender: string;
 
   @ApiProperty({
+    example: 'Customer',
+  })
+  @IsEnum(['customer', 'admin'])
+  @IsOptional()
+  flag?: 'customer' | 'admin';
+
+  @ApiProperty({
     example: [
       {
         id: '1',
@@ -75,5 +82,5 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsArray()
-  wishlist?: Product[]; // Optional, as it can be added later
+  wishlist?: Product[]; 
 }

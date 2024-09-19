@@ -1,26 +1,85 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, NotFoundException, InternalServerErrorException, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFiles,
+  ValidationPipe,
+  UsePipes,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { BadRequestException } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import { join } from 'path';
 import { Product } from './entities/product.entity';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
+// Multer storage configuration
 
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'product')); // Absolute path to images/product
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype.split('/')[1];
+    cb(null, `product-${uuidv4()}.${ext}`);
+  },
+});
 @ApiTags('product') // Group the controller under 'product' in Swagger UI
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({ status: 201, description: 'The product has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The product has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
+  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiBody({ type: CreateProductDto }) // Document the body input
-  create(@Body() createProductDto: CreateProductDto) {
+  async create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      return this.productService.create(createProductDto);
+    }
+
+    const mainImagePath = `/images/product/${files[0].filename}`;
+    const imagePaths = files
+      .slice(1)
+      .map((file) => `/images/product/${file.filename}`);
+
+    // Assign mainImage and images to DTO
+    createProductDto.mainImage = mainImagePath;
+    createProductDto.images = imagePaths;
     return this.productService.create(createProductDto);
   }
-
+  
+  @ApiOperation({ summary: 'Get top-selling products' })
+  @ApiResponse({ status: 200, description: 'Products ranked by number of sales' })
+  @Get('topSelling')
+  async findTopSellingProducts(): Promise<{ productName: string; numberOfSales: number }[]> {
+    return this.productService.findTopSellingProducts();
+  }
+  
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, description: 'List of all products' })
   @Get()
@@ -36,14 +95,33 @@ export class ProductController {
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
   }
-
   @ApiOperation({ summary: 'Update a product' })
-  @ApiResponse({ status: 200, description: 'The product has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @Patch(':id')
+  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiBody({ type: UpdateProductDto }) // Document the body input for the update
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      return this.productService.update(id, updateProductDto);
+    }
+
+    const mainImagePath = `/images/product/${files[0].filename}`;
+    const imagePaths = files
+      .slice(1)
+      .map((file) => `/images/product/${file.filename}`);
+
+    // Assign mainImage and images to DTO
+    updateProductDto.mainImage = mainImagePath;
+    updateProductDto.images = imagePaths;
     return this.productService.update(id, updateProductDto);
   }
 
