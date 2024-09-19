@@ -22,10 +22,12 @@
   "dependencies": {
     "@nestjs/config": "^3.2.3",
     "@nestjs/mongoose": "^10.0.10",
-    "@nestjs/swagger": "^7.4.0",
+    "@nestjs/swagger": "^7.4.2",
     "@nestjs/typeorm": "^10.0.2",
+    "class-transformer": "^0.5.1",
     "dotenv": "^16.4.5",
     "mongoose": "^8.6.2",
+    "nestjs-paginate": "^9.1.1",
     "pg": "^8.12.0",
     "ps": "^1.0.0",
     "swagger-ui-express": "^5.0.1",

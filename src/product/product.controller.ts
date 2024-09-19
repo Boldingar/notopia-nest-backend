@@ -4,6 +4,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 
 @ApiTags('product') // Group the controller under 'product' in Swagger UI
@@ -65,4 +66,13 @@ export class ProductController {
     return this.productService.searchProductsByName(name);
   }
 
+  @ApiOperation({ summary: 'Get all products paginated' })
+  @ApiResponse({ status: 200, description: 'List of all products' })
+  @Get()
+  async findAllpaginate(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<{ data: Product[], total: number }> {
+    return this.productService.findAllPaginated(page, limit);
+  }
 }

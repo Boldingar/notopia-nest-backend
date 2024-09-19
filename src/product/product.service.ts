@@ -5,6 +5,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService {
@@ -96,5 +97,13 @@ export class ProductService {
       throw new InternalServerErrorException('Failed to search products');
     }
   }
+
+  async findAllPaginated(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const [result, total] = await this.productRepository.findAndCount({
+        take: limit,
+        skip: (page - 1) * limit,
+    });
+    return { data: result, total };
+}
 
 }
