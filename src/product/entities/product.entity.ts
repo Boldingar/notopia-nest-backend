@@ -35,10 +35,10 @@ export class Product {
   @Column('int')
   stock: number;
 
-  @Column({ type: 'decimal', nullable: true, precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   cost: number;
 
-  @Column({ length: 50, unique: true, nullable: true })
+  @Column({ length: 50, unique: true})
   barcode: string;
 
   @ManyToMany(() => Category, (category) => category.products)
@@ -51,7 +51,7 @@ export class Product {
 
   @Column({
     type: 'enum',
-    enum: ProductType, nullable:true
+    enum: ProductType,
   })
   type: ProductType;
 

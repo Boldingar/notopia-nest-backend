@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, In } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -30,7 +30,9 @@ export class ProductService {
       } = createProductDto;
 
       // Fetch the categories
-      const categories = await this.categoryRepository.findByIds(categoryIds);
+      const categories = await this.categoryRepository.find({
+        where: { id: In(categoryIds) },
+      });
 
       if (categoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');
@@ -38,7 +40,9 @@ export class ProductService {
 
       // Fetch the linked products
       const linkedProductEntities = linkedProducts
-        ? await this.productRepository.findByIds(linkedProducts)
+        ? await this.productRepository.find({
+            where: { id: In(linkedProducts) },
+          })
         : [];
 
       // Create the product
@@ -92,7 +96,9 @@ export class ProductService {
       ...updateData,
       images,
       linkedProducts: linkedProducts
-        ? await this.productRepository.findByIds(linkedProducts)
+        ? await this.productRepository.find({
+            where: { id: In(linkedProducts) },
+          })
         : [],
     });
 
@@ -102,7 +108,9 @@ export class ProductService {
 
     // Update categories if provided
     if (categoryIds) {
-      const categories = await this.categoryRepository.findByIds(categoryIds);
+      const categories = await this.categoryRepository.find({
+        where: { id: In(categoryIds) },
+      });
 
       if (categoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');

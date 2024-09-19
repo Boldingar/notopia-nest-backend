@@ -58,7 +58,7 @@ export class ProductController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (!files || files.length === 0) {
-      throw new BadRequestException('No images uploaded');
+      return this.productService.create(createProductDto);
     }
 
     const mainImagePath = `/images/product/${files[0].filename}`;
@@ -110,7 +110,7 @@ export class ProductController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     if (!files || files.length === 0) {
-      throw new BadRequestException('No images uploaded');
+      return this.productService.update(id, updateProductDto);
     }
 
     const mainImagePath = `/images/product/${files[0].filename}`;
