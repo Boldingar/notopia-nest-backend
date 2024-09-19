@@ -33,8 +33,11 @@ export class CreateProductDto {
   mainImage?: string;
 
   @ApiProperty({
-    example: ['http://example.com/image1.jpg', 'http://example.com/image2.jpg'],
-    type: [String],
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
     required: false,
   })
   @IsArray()
@@ -79,7 +82,10 @@ export class CreateProductDto {
   barcode: string;
 
   @ApiProperty({
-    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    example: [
+      'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+      'a6409c67-e6d4-4e78-92d1-c1f5d123456f',
+    ],
     type: [String],
   })
   @IsNotEmpty()
@@ -95,7 +101,10 @@ export class CreateProductDto {
   type: ProductType;
 
   @ApiProperty({
-    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    example: [
+      'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+      'a6409c67-e6d4-4e78-92d1-c1f5d123456f',
+    ],
     type: [String],
     required: false,
   })

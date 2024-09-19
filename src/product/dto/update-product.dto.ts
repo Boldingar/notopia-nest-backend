@@ -36,8 +36,11 @@ export class UpdateProductDto {
   mainImage?: string;
 
   @ApiProperty({
-    example: ['http://example.com/image3.jpg', 'http://example.com/image4.jpg'],
-    type: [String],
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
     required: false,
   })
   @IsOptional()
@@ -94,7 +97,10 @@ export class UpdateProductDto {
   barcode?: string;
 
   @ApiProperty({
-    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    example: [
+      'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+      'a6409c67-e6d4-4e78-92d1-c1f5d123456f',
+    ],
     type: [String],
     required: false,
   })
@@ -113,7 +119,10 @@ export class UpdateProductDto {
   type?: ProductType;
 
   @ApiProperty({
-    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    example: [
+      'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+      'a6409c67-e6d4-4e78-92d1-c1f5d123456f',
+    ],
     type: [String],
     required: false,
   })
