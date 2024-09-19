@@ -96,7 +96,7 @@ export class UserService {
     return { message: `Item added successfully`, totalPrice };
   }
   
-  async checkOut(userId: string, voucherName?: string): Promise<Order> {
+  async checkOut(userId: string, addressIndex: number, voucherName?: string): Promise<Order> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['cart', 'addresses'],
@@ -106,11 +106,19 @@ export class UserService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
   
-    // Fetch the first address (assuming there is at least one address)
-    const address = user.addresses[0];
+    // Get the number of addresses the user has
+    const numberOfAddresses = user.addresses.length;
+  
+    // Ensure the index starts from 1 instead of 0, and validate that it doesn't exceed the number of addresses
+    if (addressIndex < 1 || addressIndex > numberOfAddresses) {
+      throw new BadRequestException(`Invalid address index. User has ${numberOfAddresses} address(es).`);
+    }
+  
+    // Since indexes start from 1, we need to convert it back to zero-based for accessing the array
+    const address = user.addresses[addressIndex - 1];
   
     if (!address) {
-      throw new NotFoundException(`No addresses found for User with ID ${userId}`);
+      throw new NotFoundException(`No address found at index ${addressIndex} for User with ID ${userId}`);
     }
   
     // Check if all products are in stock
@@ -137,10 +145,8 @@ export class UserService {
   
       if (voucher) {
         if (voucher.discountPercentage) {
-          // Apply percentage discount
           totalPrice -= totalPrice * (voucher.discountPercentage / 100);
         } else if (voucher.discountValue) {
-          // Apply fixed value discount
           totalPrice -= voucher.discountValue;
         }
       }
@@ -149,16 +155,18 @@ export class UserService {
     // Ensure the totalPrice does not go below zero
     totalPrice = Math.max(totalPrice, 0);
   
+    // Clear the user's cart
     user.cart = [];
     await this.userRepository.save(user);
-
-    const order = this.orderRepository.create({
+  
+    // Create the order with the selected address
+    const order = this.orderRepository.create({ 
       user,
       products,
-      cost: totalPrice,
-      status: 'Pending',
+      cost: totalPrice, 
+      status: 'Pending', 
     });
-
+  
     await this.orderRepository.save(order);
   
     // Decrease the stock for each product

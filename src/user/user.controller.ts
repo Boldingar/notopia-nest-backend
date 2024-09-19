@@ -94,9 +94,10 @@ export class UserController {
   @ApiQuery({ name: 'voucherName', type: String, required: false, description: 'Optional voucher name to apply a discount' })
   async checkOut(
     @Param('userId') userId: string,
+    @Query('addressIndex') addressIndex: number,
     @Query('voucherName') voucherName?: string
   ) {
-    return this.userService.checkOut(userId, voucherName);
+    return this.userService.checkOut(userId, addressIndex, voucherName );
   }
 
   // New route to get all products in the user's cart
