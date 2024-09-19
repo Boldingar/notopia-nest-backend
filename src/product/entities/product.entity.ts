@@ -1,5 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
+
+export enum ProductType {
+  MAIN = 'Main',
+  SIDE = 'Side',
+}
 
 @Entity()
 export class Product {
@@ -32,7 +37,29 @@ export class Product {
 
   @Column({ type: 'decimal', nullable: true, precision: 10, scale: 2 })
   cost: number;
-  
-  @ManyToOne(() => Category, (category) => category.products)
-  category: Category;
+
+  @Column({ length: 50, unique: true, nullable: true })
+  barcode: string;
+
+  @ManyToMany(() => Category, (category) => category.products)
+  @JoinTable({
+    name: 'product_categories', // Optional: specify the join table name
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
+  })
+  categories: Category[];
+
+  @Column({
+    type: 'enum',
+    enum: ProductType, nullable:true
+  })
+  type: ProductType;
+
+  @ManyToMany(() => Product)
+  @JoinTable({
+    name: 'linked_products',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'linked_product_id', referencedColumnName: 'id' },
+  })
+  linkedProducts: Product[];
 }

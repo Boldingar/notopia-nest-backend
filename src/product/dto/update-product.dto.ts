@@ -6,7 +6,9 @@ import {
   IsOptional,
   IsDecimal,
   IsUUID,
+  IsEnum,
 } from 'class-validator';
+import { ProductType } from '../entities/product.entity'; // Import the enum
 
 export class UpdateProductDto {
   @ApiProperty({
@@ -74,16 +76,49 @@ export class UpdateProductDto {
   @IsOptional()
   @IsNumber()
   stock?: number;
+
   @ApiProperty({
     example: 100.0,
-  })
-  @IsDecimal({ decimal_digits: '2', force_decimal: true })
-  cost?: number;
-  @ApiProperty({
-    example: 'd3d5e43b-0c5b-4a58-8a8c-d4c9d678c7d4',
     required: false,
   })
   @IsOptional()
-  @IsUUID('4')
-  categoryId?: string; // Optional ID of the category to which the product belongs
+  @IsDecimal({ decimal_digits: '2', force_decimal: true })
+  cost?: number;
+
+  @ApiProperty({
+    example: '1234567890123',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @ApiProperty({
+    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    type: [String],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  categoryIds?: string[];
+
+  @ApiProperty({
+    example: 'Main',
+    enum: ProductType,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(ProductType)
+  type?: ProductType;
+
+  @ApiProperty({
+    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    type: [String],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  linkedProducts?: string[];
 }
