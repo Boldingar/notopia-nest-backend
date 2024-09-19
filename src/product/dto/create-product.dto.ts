@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsArray, IsOptional, IsDecimal, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  IsDecimal,
+  IsUUID,
+  IsEnum,
+  IsNotEmpty,
+} from 'class-validator';
+import { ProductType } from '../entities/product.entity'; // Import the enum from your entity
 
 export class CreateProductDto {
   @ApiProperty({
@@ -55,14 +65,42 @@ export class CreateProductDto {
   })
   @IsNumber()
   stock: number;
+
   @ApiProperty({
     example: 100.0,
   })
   @IsDecimal({ decimal_digits: '2', force_decimal: true })
   cost: number;
+
   @ApiProperty({
-    example: 'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+    example: '1234567890123',
   })
-  @IsUUID('4')
-  categoryId: string; // ID of the category to which the product belongs
+  @IsString()
+  barcode: string;
+
+  @ApiProperty({
+    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    type: [String],
+  })
+  @IsNotEmpty()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  categoryIds: string[];
+
+  @ApiProperty({
+    example: 'Main',
+    enum: ProductType,
+  })
+  @IsEnum(ProductType)
+  type: ProductType;
+
+  @ApiProperty({
+    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb', 'a6409c67-e6d4-4e78-92d1-c1f5d123456f'],
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  linkedProducts?: string[];
 }

@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, In } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -22,20 +22,35 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      const { categoryId, images, ...productData } = createProductDto;
+      const {
+        categoryIds,
+        images,
+        linkedProducts,
+        ...productData
+      } = createProductDto;
 
-      const category = await this.categoryRepository.findOne({
-        where: { id: categoryId },
+      // Fetch the categories
+      const categories = await this.categoryRepository.find({
+        where: { id: In(categoryIds) },
       });
 
-      if (!category) {
-        throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      if (categoryIds.length !== categories.length) {
+        throw new NotFoundException('One or more categories not found');
       }
 
+      // Fetch the linked products
+      const linkedProductEntities = linkedProducts
+        ? await this.productRepository.find({
+            where: { id: In(linkedProducts) },
+          })
+        : [];
+
+      // Create the product
       const product = this.productRepository.create({
         ...productData,
-        category,
+        categories, // Set categories
         images,
+        linkedProducts: linkedProductEntities, // Set linked products
       });
 
       return await this.productRepository.save(product);
@@ -44,14 +59,17 @@ export class ProductService {
       throw new BadRequestException('Failed to create product');
     }
   }
+
   async findAll(): Promise<Product[]> {
-    return this.productRepository.find({ relations: ['category'] });
+    return this.productRepository.find({
+      relations: ['categories', 'linkedProducts'], // Include relationships
+    });
   }
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['category'],
+      relations: ['categories', 'linkedProducts'], // Include relationships
     });
 
     if (!product) {
@@ -65,30 +83,40 @@ export class ProductService {
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const { categoryId, images, ...updateData } = updateProductDto;
+    const {
+      categoryIds,
+      images,
+      linkedProducts,
+      ...updateData
+    } = updateProductDto;
 
     // Find the existing product
     const product = await this.productRepository.preload({
       id,
       ...updateData,
       images,
+      linkedProducts: linkedProducts
+        ? await this.productRepository.find({
+            where: { id: In(linkedProducts) },
+          })
+        : [],
     });
 
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    // If a new category is provided, find it and update the product's category
-    if (categoryId) {
-      const category = await this.categoryRepository.findOne({
-        where: { id: categoryId },
+    // Update categories if provided
+    if (categoryIds) {
+      const categories = await this.categoryRepository.find({
+        where: { id: In(categoryIds) },
       });
 
-      if (!category) {
-        throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      if (categoryIds.length !== categories.length) {
+        throw new NotFoundException('One or more categories not found');
       }
 
-      product.category = category;
+      product.categories = categories;
     }
 
     return this.productRepository.save(product);
@@ -104,12 +132,12 @@ export class ProductService {
 
   async findTopSellingProducts(): Promise<{ productName: string; numberOfSales: number }[]> {
     const products = await this.productRepository.find();
-  
+
     const sortedProducts = products.sort((a, b) => b.numberOfSales - a.numberOfSales);
-  
+
     return sortedProducts.map((product) => ({
       productName: product.name,
-      numberOfSales: product.numberOfSales || 0, 
+      numberOfSales: product.numberOfSales || 0,
     }));
   }
 
@@ -122,5 +150,4 @@ export class ProductService {
       throw new InternalServerErrorException('Failed to search products');
     }
   }
-
 }
