@@ -12,8 +12,9 @@ export class UpdateCategoryDto {
   categoryName?: string;
 
   @ApiProperty({
-    example: 'https://example.com/new-image.png',
-    description: 'Optional updated URL for the category image',
+    type: 'string',
+    format: 'binary',
+    description: 'Category image file',
     required: false,
   })
   @IsOptional()

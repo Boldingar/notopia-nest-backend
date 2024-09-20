@@ -8,8 +8,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, In } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
+import { Product, ProductType } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { validate as uuidValidate } from 'uuid';
 import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
@@ -23,19 +24,42 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      const {
-        categoryIds,
-        images,
-        linkedProducts,
-        ...productData
-      } = createProductDto;
+    let parsedCategoryIds: string[] = [];
+      const { categoryIds, images, linkedProducts, ...productData } =
+        createProductDto;
+
+      console.log(typeof categoryIds);
+      console.log('Received categoryIds:', categoryIds);
+
+      // Ensure categoryIds is an array of strings
+      let tempId = '';
+      for (let i = 0; i < categoryIds.length; i++) {
+        if (categoryIds[i] === ',') {
+          parsedCategoryIds.push(tempId.trim());
+          tempId = '';
+        } else {
+          tempId += categoryIds[i];
+        }
+      }
+      // Push the last id
+      if (tempId) {
+        parsedCategoryIds.push(tempId.trim());
+      }
+
+      console.log('Parsed categoryIds:', parsedCategoryIds);
+
+      // Ensure categoryIds is an array
+      if (!Array.isArray(parsedCategoryIds)) {
+        throw new BadRequestException('categoryIds must be an array');
+      }
 
       // Fetch the categories
       const categories = await this.categoryRepository.find({
-        where: { id: In(categoryIds) },
+        where: { id: In(parsedCategoryIds) },
       });
+console.log("categoriesssssssssss",categories);
 
-      if (categoryIds.length !== categories.length) {
+      if (parsedCategoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');
       }
 
@@ -63,14 +87,28 @@ export class ProductService {
 
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
-      relations: ['categories', 'linkedProducts'], // Include relationships
+      relations: ['categories', 'linkedProducts'],
+    });
+  }
+
+  async findMain(): Promise<Product[]> {
+    return this.productRepository.find({
+      where: { type: ProductType.MAIN },
+      relations: ['categories', 'linkedProducts'],
+    });
+  }
+
+  async findSide(): Promise<Product[]> {
+    return this.productRepository.find({
+      where: { type: ProductType.SIDE },
+      relations: ['categories', 'linkedProducts'],
     });
   }
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['categories', 'linkedProducts'], // Include relationships
+      relations: ['categories', 'linkedProducts'],
     });
 
     if (!product) {
@@ -80,18 +118,31 @@ export class ProductService {
     return product;
   }
 
+  async findLinkedProducts(productId: string): Promise<Product[]> {
+    try {
+      const product = await this.productRepository.findOne({
+        where: { id: productId },
+        relations: ['linkedProducts'],
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${productId} not found`);
+      }
+
+      return product.linkedProducts;
+    } catch (error) {
+      console.error('Error finding linked products:', error);
+      throw new InternalServerErrorException('Failed to find linked products');
+    }
+  }
+
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const {
-      categoryIds,
-      images,
-      linkedProducts,
-      ...updateData
-    } = updateProductDto;
+    const { categoryIds, images, linkedProducts, ...updateData } =
+      updateProductDto;
 
-    // Find the existing product
     const product = await this.productRepository.preload({
       id,
       ...updateData,
@@ -107,7 +158,6 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    // Update categories if provided
     if (categoryIds) {
       const categories = await this.categoryRepository.find({
         where: { id: In(categoryIds) },
@@ -131,10 +181,14 @@ export class ProductService {
     }
   }
 
-  async findTopSellingProducts(): Promise<{ productName: string; numberOfSales: number }[]> {
+  async findTopSellingProducts(): Promise<
+    { productName: string; numberOfSales: number }[]
+  > {
     const products = await this.productRepository.find();
 
-    const sortedProducts = products.sort((a, b) => b.numberOfSales - a.numberOfSales);
+    const sortedProducts = products.sort(
+      (a, b) => b.numberOfSales - a.numberOfSales,
+    );
 
     return sortedProducts.map((product) => ({
       productName: product.name,

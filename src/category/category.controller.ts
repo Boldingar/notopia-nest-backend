@@ -1,33 +1,84 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFiles,
+  UploadedFile,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
-
+import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import { join } from 'path';
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'categories')); // Absolute path to images/product
+  },
+  filename: (req, file, cb) => {
+    const ext = file.mimetype.split('/')[1];
+    cb(null, `category-${uuidv4()}.${ext}`);
+  },
+});
 @ApiTags('category')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiResponse({ status: 201, description: 'The category has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The category has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
-  @ApiBody({ type: CreateCategoryDto }) 
-  create(@Body() createCategoryDto: CreateCategoryDto) {
+  @UseInterceptors(
+    FileInterceptor('categoryImgUrl', { storage: multerStorage }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateCategoryDto })
+  create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @UploadedFile() categoryImg: Express.Multer.File,
+  ) {
+    if (!categoryImg) {
+      return this.categoryService.create(createCategoryDto);
+    }
+    const categoryImgUrl = `/images/categories/${categoryImg.filename}`;
+    createCategoryDto.categoryImgUrl = categoryImgUrl;
     return this.categoryService.create(createCategoryDto);
   }
 
   @ApiOperation({ summary: 'Get all categories' })
-  @ApiResponse({ status: 200, description: 'List of all categories without products' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all categories without products',
+  })
   @Get()
   findAll() {
     return this.categoryService.findCategories();
   }
 
   @ApiOperation({ summary: 'Get all categories with products' })
-  @ApiResponse({ status: 200, description: 'List of all categories without products' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all categories without products',
+  })
   @Get('/details')
   findAllDetails() {
     return this.categoryService.findAll();
@@ -36,7 +87,9 @@ export class CategoryController {
   @ApiOperation({ summary: 'Get categories number of sales' })
   @ApiResponse({ status: 200, description: 'Categories ranked by sales.' })
   @Get('topSelling')
-  async findTopSellingCategories(): Promise<{ categoryName: string; totalSales: number }[]> {
+  async findTopSellingCategories(): Promise<
+    { categoryName: string; totalSales: number }[]
+  > {
     return this.categoryService.findTopSellingCategories();
   }
 
@@ -50,7 +103,10 @@ export class CategoryController {
   }
 
   @ApiOperation({ summary: 'Get products of a category by ID' })
-  @ApiResponse({ status: 200, description: 'List of products in the specified category' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of products in the specified category',
+  })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
   @Get(':id/products')
@@ -59,12 +115,28 @@ export class CategoryController {
   }
 
   @ApiOperation({ summary: 'Update a category' })
-  @ApiResponse({ status: 200, description: 'The category has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The category has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
   @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('categoryImgUrl', { storage: multerStorage }),
+  )
+  @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UpdateCategoryDto })
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+    @UploadedFile() categoryImg: Express.Multer.File,
+  ) {
+    if (!categoryImg) {
+      return this.categoryService.update(id, updateCategoryDto);
+    }
+    const categoryImgUrl = `/images/categories/${categoryImg.filename}`;
+    updateCategoryDto.categoryImgUrl = categoryImgUrl;
     return this.categoryService.update(id, updateCategoryDto);
   }
 

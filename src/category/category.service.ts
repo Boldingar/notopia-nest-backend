@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -16,19 +16,23 @@ export class CategoryService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const { categoryName, categoryImgUrl } = createCategoryDto;
-    
-    // Create a new instance of Category entity
-    const category = this.categoryRepository.create({
-      categoryName,
-      categoryImgUrl,
-      products: [],
-    });
+   try {
+     const { categoryName, categoryImgUrl } = createCategoryDto;
 
-    // Save the category to the database
-    return this.categoryRepository.save(category);
+     // Create a new instance of Category entity
+     const category = this.categoryRepository.create({
+       categoryName,
+       categoryImgUrl,
+       products: [],
+     });
+
+     // Save the category to the database
+     return this.categoryRepository.save(category);
+   } catch (error) {
+     console.error('Error creating category:', error);
+     throw new BadRequestException('Failed to create category');
+   }
   }
-
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({ relations: ['products'] });
   }
