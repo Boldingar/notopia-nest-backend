@@ -207,10 +207,16 @@ console.log("categoriesssssssssss",categories);
   }
 
   async findAllPaginated(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit); // At least 1 item per page
+    const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
+
+    console.log(`Pagination -> page: ${page}, limit: ${limit}, take: ${take}, skip: ${skip}`);
+
     const [result, total] = await this.productRepository.findAndCount({
-        take: limit,
-        skip: (page - 1) * limit,
+        take,
+        skip,
     });
+
     return { data: result, total };
 }
 
