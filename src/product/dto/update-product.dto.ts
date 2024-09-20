@@ -110,6 +110,17 @@ export class UpdateProductDto {
   categoryIds?: string[];
 
   @ApiProperty({
+    example: [
+      'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+    ],
+    type: 'string',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('4', { each: true })
+  brandId?: string;
+
+  @ApiProperty({
     example: 'Main',
     enum: ProductType,
     required: false,

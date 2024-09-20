@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, JoinColumn } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
+import { Brand } from 'src/brand/entities/brand.entity';
 
 export enum ProductType {
   MAIN = 'Main',
@@ -66,4 +67,8 @@ export class Product {
     },
   })
   linkedProducts: Product[];
+
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn({ name: 'brandId' }) 
+  brand: Brand;
 }
