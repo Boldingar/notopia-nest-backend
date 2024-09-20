@@ -23,13 +23,9 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
-    let parsedCategoryIds: string[] = [];
+      let parsedCategoryIds: string[] = [];
       const { categoryIds, images, linkedProducts, ...productData } =
         createProductDto;
-
-      console.log(typeof categoryIds);
-      console.log('Received categoryIds:', categoryIds);
-
       // Ensure categoryIds is an array of strings
       let tempId = '';
       for (let i = 0; i < categoryIds.length; i++) {
@@ -45,8 +41,6 @@ export class ProductService {
         parsedCategoryIds.push(tempId.trim());
       }
 
-      console.log('Parsed categoryIds:', parsedCategoryIds);
-
       // Ensure categoryIds is an array
       if (!Array.isArray(parsedCategoryIds)) {
         throw new BadRequestException('categoryIds must be an array');
@@ -56,19 +50,40 @@ export class ProductService {
       const categories = await this.categoryRepository.find({
         where: { id: In(parsedCategoryIds) },
       });
-console.log("categoriesssssssssss",categories);
 
       if (parsedCategoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');
+      }
+      ///////////////////////////
+       let parsedLinkedProductEntities: string[] = [];
+      // Ensure linkedProducts is an array of strings
+      let tempId2 = '';
+      for (let i = 0; i < linkedProducts.length; i++) {
+        if (linkedProducts[i] === ',') {
+          parsedLinkedProductEntities.push(tempId2.trim());
+          tempId2 = '';
+        } else {
+          tempId2 += linkedProducts[i];
+        }
+      }
+      // Push the last id
+      if (tempId2) {
+        parsedLinkedProductEntities.push(tempId2.trim());
+      }
+      // Ensure linkedProducts is an array
+      if (!Array.isArray(parsedLinkedProductEntities)) {
+        throw new BadRequestException('linkedProducts must be an array');
       }
 
       // Fetch the linked products
       const linkedProductEntities = linkedProducts
         ? await this.productRepository.find({
-            where: { id: In(linkedProducts) },
+            where: { id: In(parsedLinkedProductEntities) },
           })
         : [];
-
+      if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
+        throw new NotFoundException('One or more categories not found');
+      }
       // Create the product
       const product = this.productRepository.create({
         ...productData,
