@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   ValidationPipe,
   UsePipes,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
