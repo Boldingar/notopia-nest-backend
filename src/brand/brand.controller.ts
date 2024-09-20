@@ -26,6 +26,13 @@ export class BrandController {
     return this.brandService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get top-selling brands' })
+  @ApiResponse({ status: 200, description: 'Top-selling brands ranked.' })
+  @Get('top-selling')
+  async findTopSellingBrands(): Promise<{ brandName: string; totalSales: number }[]> {
+    return this.brandService.findTopSellingCategories();
+  }
+
   @ApiOperation({ summary: 'Get a brand by ID' })
   @ApiResponse({ status: 200, description: 'Brand found.' })
   @ApiResponse({ status: 404, description: 'Brand not found.' })
@@ -63,10 +70,4 @@ export class BrandController {
     return this.brandService.remove(id);
   }
 
-  @ApiOperation({ summary: 'Get top-selling brands' })
-  @ApiResponse({ status: 200, description: 'Top-selling brands ranked.' })
-  @Get('top-selling')
-  async findTopSellingBrands(): Promise<{ brandName: string; totalSales: number }[]> {
-    return this.brandService.findTopSellingCategories();
-  }
 }
