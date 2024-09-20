@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
 import { Product } from 'src/product/entities/product.entity';
 
 @Entity()
@@ -12,6 +12,6 @@ export class Category {
   @Column('text', { nullable: true })
   categoryImgUrl: string;
 
-  @OneToMany(() => Product, (product) => product.categories, { nullable: true })
+  @ManyToMany(() => Product, (product) => product.categories)
   products: Product[];
 }

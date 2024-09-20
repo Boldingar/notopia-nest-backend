@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -16,22 +20,22 @@ export class CategoryService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-   try {
-     const { categoryName, categoryImgUrl } = createCategoryDto;
+    try {
+      const { categoryName, categoryImgUrl } = createCategoryDto;
 
-     // Create a new instance of Category entity
-     const category = this.categoryRepository.create({
-       categoryName,
-       categoryImgUrl,
-       products: [],
-     });
+      // Create a new instance of Category entity
+      const category = this.categoryRepository.create({
+        categoryName,
+        categoryImgUrl,
+        products: [],
+      });
 
-     // Save the category to the database
-     return this.categoryRepository.save(category);
-   } catch (error) {
-     console.error('Error creating category:', error);
-     throw new BadRequestException('Failed to create category');
-   }
+      // Save the category to the database
+      return this.categoryRepository.save(category);
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw new BadRequestException('Failed to create category');
+    }
   }
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({ relations: ['products'] });
@@ -42,7 +46,10 @@ export class CategoryService {
   }
 
   async findOne(id: string): Promise<Category> {
-    return this.categoryRepository.findOne({ where: { id }, relations: ['products'] });
+    return this.categoryRepository.findOne({
+      where: { id },
+      relations: ['products'],
+    });
   }
 
   async findProducts(id: string): Promise<any[]> {
@@ -59,7 +66,10 @@ export class CategoryService {
     return category.products;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     const category = await this.categoryRepository.preload({
       id,
       ...updateCategoryDto,
@@ -76,26 +86,27 @@ export class CategoryService {
     await this.categoryRepository.delete(id);
   }
 
-  async findTopSellingCategories(): Promise<{ categoryName: string; totalSales: number }[]> {
+  async findTopSellingCategories(): Promise<
+    { categoryName: string; totalSales: number }[]
+  > {
     const categories = await this.categoryRepository.find();
-  
+
     const categoriesWithSales = await Promise.all(
       categories.map(async (category) => {
         const totalSales = await this.productRepository
           .createQueryBuilder('product')
-          .where('product.categoryId = :categoryId', { categoryId: category.id })
+          .innerJoin('product.categories', 'category')
+          .where('category.id = :categoryId', { categoryId: category.id })
           .select('SUM(product.numberOfSales)', 'totalSales')
           .getRawOne();
-  
-          return {
-            categoryName: category.categoryName,
-            totalSales: parseInt(totalSales.totalSales, 10) || 0, 
-          };
+
+        return {
+          categoryName: category.categoryName,
+          totalSales: parseInt(totalSales.totalSales, 10) || 0,
+        };
       }),
     );
-  
-    categoriesWithSales.sort((a, b) => b.totalSales - a.totalSales);
-  
+
     return categoriesWithSales;
   }
 }
