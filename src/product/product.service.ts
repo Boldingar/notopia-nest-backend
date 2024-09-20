@@ -11,7 +11,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductType } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { validate as uuidValidate } from 'uuid';
-import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
+// import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService {
@@ -100,24 +100,45 @@ export class ProductService {
     }
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepository.find({
+  async findAll(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit); // At least 1 item per page
+    const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
+  
+    const [result, total] = await this.productRepository.findAndCount({
       relations: ['categories', 'linkedProducts'],
+      take,
+      skip,
     });
+  
+    return { data: result, total };
   }
 
-  async findMain(): Promise<Product[]> {
-    return this.productRepository.find({
+  async findMain(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+  
+    const [result, total] = await this.productRepository.findAndCount({
       where: { type: ProductType.MAIN },
       relations: ['categories', 'linkedProducts'],
+      take,
+      skip,
     });
+  
+    return { data: result, total };
   }
 
-  async findSide(): Promise<Product[]> {
-    return this.productRepository.find({
+  async findSide(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+  
+    const [result, total] = await this.productRepository.findAndCount({
       where: { type: ProductType.SIDE },
       relations: ['categories', 'linkedProducts'],
+      take,
+      skip,
     });
+  
+    return { data: result, total };
   }
 
   async findOne(id: string): Promise<Product> {
@@ -133,22 +154,23 @@ export class ProductService {
     return product;
   }
 
-  async findLinkedProducts(productId: string): Promise<Product[]> {
-    try {
-      const product = await this.productRepository.findOne({
-        where: { id: productId },
-        relations: ['linkedProducts'],
-      });
-
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${productId} not found`);
-      }
-
-      return product.linkedProducts;
-    } catch (error) {
-      console.error('Error finding linked products:', error);
-      throw new InternalServerErrorException('Failed to find linked products');
+  async findLinkedProducts(productId: string, page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+  
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+      relations: ['linkedProducts'],
+    });
+  
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
     }
+  
+    const linkedProducts = product.linkedProducts.slice(skip, skip + take);
+    const total = product.linkedProducts.length;
+  
+    return { data: linkedProducts, total };
   }
 
   async update(
@@ -211,28 +233,32 @@ export class ProductService {
     }));
   }
 
-  async searchProductsByName(name: string): Promise<Product[]> {
-    try {
-      return await this.productRepository.find({
-        where: { name: ILike(`%${name}%`) },
-      });
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to search products');
-    }
-  }
-
-  async findAllPaginated(page: number, limit: number): Promise<{ data: Product[], total: number }> {
-    const take = Math.max(1, limit); // At least 1 item per page
-    const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
-
-    console.log(`Pagination -> page: ${page}, limit: ${limit}, take: ${take}, skip: ${skip}`);
-
+  async searchProductsByName(name: string, page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+  
     const [result, total] = await this.productRepository.findAndCount({
-        take,
-        skip,
+      where: { name: ILike(`%${name}%`) },
+      take,
+      skip,
     });
-
+  
     return { data: result, total };
-}
+  }
+  
+
+//   async findAllPaginated(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+//     const take = Math.max(1, limit); // At least 1 item per page
+//     const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
+
+//     console.log(`Pagination -> page: ${page}, limit: ${limit}, take: ${take}, skip: ${skip}`);
+
+//     const [result, total] = await this.productRepository.findAndCount({
+//         take,
+//         skip,
+//     });
+
+//     return { data: result, total };
+// }
 
 }
