@@ -112,7 +112,18 @@ export class UpdateProductDto {
   @ApiProperty({
     example: [
       'b5508d57-d3d5-4b78-97f2-d7f565b6e0cb',
+      'a6409c67-e6d4-4e78-92d1-c1f5d123456f',
     ],
+    type: [String],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  tagsId?: string[];
+
+  @ApiProperty({
+    example: ['b5508d57-d3d5-4b78-97f2-d7f565b6e0cb'],
     type: 'string',
     required: false,
   })
