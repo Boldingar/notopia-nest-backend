@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   ValidationPipe,
   UsePipes,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,6 +29,7 @@ import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 import { Product } from './entities/product.entity';
+// import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 // Multer storage configuration
 
@@ -89,22 +91,28 @@ export class ProductController {
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, description: 'List of all products' })
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
+    return this.productService.findAll(page, limit);
   }
 
   @ApiOperation({ summary: 'Get Main products' })
-  @ApiResponse({ status: 200, description: 'List of all products' })
+  @ApiResponse({ status: 200, description: 'List of all main products' })
   @Get('main')
-  findMain() {
-    return this.productService.findMain();
+  findMain(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.productService.findMain(page, limit);
   }
 
   @ApiOperation({ summary: 'Get Side products' })
   @ApiResponse({ status: 200, description: 'List of all products' })
   @Get('side')
-  findSide() {
-    return this.productService.findSide();
+  findSide(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.productService.findSide(page, limit);
   }
 
   @ApiOperation({ summary: 'Get flash-sales products' })
@@ -131,8 +139,12 @@ export class ProductController {
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @Get('linked/:id')
-  findLinkedProducts(@Param('id') id: string) {
-    return this.productService.findLinkedProducts(id);
+  findLinkedProducts(
+    @Param('id') id: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.productService.findLinkedProducts(id, page, limit);
   }
 
   @ApiOperation({ summary: 'Update a product' })
@@ -181,6 +193,11 @@ export class ProductController {
     description: 'List of products matching the search name',
     type: [Product],
   })
+  @ApiOperation({ summary: 'Search products by name' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of products matching the search',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiParam({
     name: 'search',
@@ -189,7 +206,11 @@ export class ProductController {
   })
   @Get('search/:search')
   @UsePipes(new ValidationPipe({ transform: true }))
-  search(@Param('search') name: string): Promise<Product[]> {
-    return this.productService.searchProductsByName(name);
+  async search(
+    @Param('search') name: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<{ data: Product[]; total: number }> {
+    return this.productService.searchProductsByName(name, page, limit);
   }
 }
