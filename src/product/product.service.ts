@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, In } from 'typeorm';
+import { Repository, ILike, In, MoreThan } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductType } from './entities/product.entity';
@@ -55,7 +55,7 @@ export class ProductService {
         throw new NotFoundException('One or more categories not found');
       }
       ///////////////////////////
-       let parsedLinkedProductEntities: string[] = [];
+      let parsedLinkedProductEntities: string[] = [];
       // Ensure linkedProducts is an array of strings
       let tempId2 = '';
       for (let i = 0; i < linkedProducts.length; i++) {
@@ -154,34 +154,92 @@ export class ProductService {
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const { categoryIds, images, linkedProducts, ...updateData } =
+    let { categoryIds, images, linkedProducts, ...updateData } =
       updateProductDto;
+    // Fetch the existing product
+    const existingProduct = await this.productRepository.findOne({
+      where: { id },
+    });
+    if (!existingProduct) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    // Merge images
+    if (images) {
+      images = [...new Set([...existingProduct.images, ...images])];
+    }
+
+    // Parse and merge linkedProducts
+    let parsedLinkedProductEntities: string[] = [];
+    if (linkedProducts) {
+      let tempId2 = '';
+      for (let i = 0; i < linkedProducts.length; i++) {
+        if (linkedProducts[i] === ',') {
+          parsedLinkedProductEntities.push(tempId2.trim());
+          tempId2 = '';
+        } else {
+          tempId2 += linkedProducts[i];
+        }
+      }
+      if (tempId2) {
+        parsedLinkedProductEntities.push(tempId2.trim());
+      }
+      const linkedProductEntities = linkedProducts
+        ? await this.productRepository.find({
+            where: { id: In(parsedLinkedProductEntities) },
+          })
+        : [];
+      if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
+        throw new NotFoundException('One or more linked products not found');
+      }
+      existingProduct.linkedProducts = [
+        ...new Set([
+          ...existingProduct.linkedProducts,
+          ...linkedProductEntities,
+        ]),
+      ];
+    }
+
+    //////////////////////////
+    let parsedCategoryIds: string[] = [];
+
+    if (categoryIds) {
+      let tempId = '';
+      for (let i = 0; i < categoryIds.length; i++) {
+        if (categoryIds[i] === ',') {
+          parsedCategoryIds.push(tempId.trim());
+          tempId = '';
+        } else {
+          tempId += categoryIds[i];
+        }
+      }
+      if (tempId) {
+        parsedCategoryIds.push(tempId.trim());
+      }
+
+      const categories = await this.categoryRepository.find({
+        where: { id: In(parsedCategoryIds) },
+      });
+      if (parsedCategoryIds.length !== categories.length) {
+        throw new NotFoundException('One or more categories not found');
+      }
+      existingProduct.categories = [
+        ...new Set([...existingProduct.categories, ...categories]),
+      ];
+    }
 
     const product = await this.productRepository.preload({
       id,
       ...updateData,
       images,
-      linkedProducts: linkedProducts
-        ? await this.productRepository.find({
-            where: { id: In(linkedProducts) },
-          })
-        : [],
+      linkedProducts: existingProduct.linkedProducts,
+      categories: existingProduct.categories,
     });
+    console.log('3deeeeeeeeeeet');
+    console.log(product);
 
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
-    if (categoryIds) {
-      const categories = await this.categoryRepository.find({
-        where: { id: In(categoryIds) },
-      });
-
-      if (categoryIds.length !== categories.length) {
-        throw new NotFoundException('One or more categories not found');
-      }
-
-      product.categories = categories;
     }
 
     return this.productRepository.save(product);
@@ -219,4 +277,14 @@ export class ProductService {
       throw new InternalServerErrorException('Failed to search products');
     }
   }
+
+  async getFlashSales(): Promise<{ data: Product[], total: number }> {
+  const [data, total] = await this.productRepository.findAndCount({
+    where: {
+      discountPercentage: MoreThan(30),
+    },
+  });
+  return { data, total };
+  }
+  
 }

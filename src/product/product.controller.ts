@@ -107,6 +107,16 @@ export class ProductController {
     return this.productService.findSide();
   }
 
+  @ApiOperation({ summary: 'Get flash-sales products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products of discount more than 30% sale',
+  })
+  @Get('flashSale')
+  async getFlashSales(): Promise<{ data: Product[]; total: number }> {
+    return this.productService.getFlashSales();
+  }
+
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiResponse({ status: 200, description: 'Product found' })
   @ApiResponse({ status: 404, description: 'Product not found' })
