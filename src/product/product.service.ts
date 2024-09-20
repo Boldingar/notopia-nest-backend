@@ -23,15 +23,42 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
+    let parsedCategoryIds: string[] = [];
       const { categoryIds, images, linkedProducts, ...productData } =
         createProductDto;
 
+      console.log(typeof categoryIds);
+      console.log('Received categoryIds:', categoryIds);
+
+      // Ensure categoryIds is an array of strings
+      let tempId = '';
+      for (let i = 0; i < categoryIds.length; i++) {
+        if (categoryIds[i] === ',') {
+          parsedCategoryIds.push(tempId.trim());
+          tempId = '';
+        } else {
+          tempId += categoryIds[i];
+        }
+      }
+      // Push the last id
+      if (tempId) {
+        parsedCategoryIds.push(tempId.trim());
+      }
+
+      console.log('Parsed categoryIds:', parsedCategoryIds);
+
+      // Ensure categoryIds is an array
+      if (!Array.isArray(parsedCategoryIds)) {
+        throw new BadRequestException('categoryIds must be an array');
+      }
+
       // Fetch the categories
       const categories = await this.categoryRepository.find({
-        where: { id: In(categoryIds) },
+        where: { id: In(parsedCategoryIds) },
       });
+console.log("categoriesssssssssss",categories);
 
-      if (categoryIds.length !== categories.length) {
+      if (parsedCategoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');
       }
 
@@ -56,6 +83,7 @@ export class ProductService {
       throw new BadRequestException('Failed to create product');
     }
   }
+
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
       relations: ['categories', 'linkedProducts'],

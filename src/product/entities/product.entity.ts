@@ -35,15 +35,15 @@ export class Product {
   @Column('int')
   stock: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2,})
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   cost: number;
 
-  @Column({ length: 50, unique: true, nullable:true})
+  @Column({ length: 50, unique: true, nullable: true })
   barcode: string;
 
   @ManyToMany(() => Category, (category) => category.products)
   @JoinTable({
-    name: 'product_categories', // Optional: specify the join table name
+    name: 'product_categories',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
   })
@@ -51,7 +51,8 @@ export class Product {
 
   @Column({
     type: 'enum',
-    enum: ProductType, nullable: true
+    enum: ProductType,
+    nullable: true,
   })
   type: ProductType;
 
@@ -59,7 +60,10 @@ export class Product {
   @JoinTable({
     name: 'linked_products',
     joinColumn: { name: 'product_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'linked_product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: {
+      name: 'linked_product_id',
+      referencedColumnName: 'id',
+    },
   })
   linkedProducts: Product[];
 }
