@@ -186,59 +186,141 @@ export class ProductService {
     return { data: linkedProducts, total };
   }
 
+  // async update(
+  //   id: string,
+  //   updateProductDto: UpdateProductDto,
+  // ): Promise<Product> {
+  //   let { categoryIds, images, linkedProducts, ...updateData } =
+  //     updateProductDto;
+  //   // Fetch the existing product
+  //   const existingProduct = await this.productRepository.findOne({
+  //     where: { id },
+  //   });
+  //   if (!existingProduct) {
+  //     throw new NotFoundException(`Product with ID ${id} not found`);
+  //   }
+
+  //   // Merge images
+  //   if (images) {
+  //     images = [...new Set([...existingProduct.images, ...images])];
+  //   }
+
+  //   // Parse and merge linkedProducts
+  //   let parsedLinkedProductEntities: string[] = [];
+  //   if (linkedProducts) {
+  //     let tempId2 = '';
+  //     for (let i = 0; i < linkedProducts.length; i++) {
+  //       if (linkedProducts[i] === ',') {
+  //         parsedLinkedProductEntities.push(tempId2.trim());
+  //         tempId2 = '';
+  //       } else {
+  //         tempId2 += linkedProducts[i];
+  //       }
+  //     }
+  //     if (tempId2) {
+  //       parsedLinkedProductEntities.push(tempId2.trim());
+  //     }
+  //     const linkedProductEntities = linkedProducts
+  //       ? await this.productRepository.find({
+  //           where: { id: In(parsedLinkedProductEntities) },
+  //         })
+  //       : [];
+  //     if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
+  //       throw new NotFoundException('One or more linked products not found');
+  //     }
+  //     existingProduct.linkedProducts = [
+  //       ...new Set([
+  //         ...existingProduct.linkedProducts,
+  //         ...linkedProductEntities,
+  //       ]),
+  //     ];
+  //   }
+
+  //   //////////////////////////
+  //   let parsedCategoryIds: string[] = [];
+
+  //   if (categoryIds) {
+  //     let tempId = '';
+  //     for (let i = 0; i < categoryIds.length; i++) {
+  //       if (categoryIds[i] === ',') {
+  //         parsedCategoryIds.push(tempId.trim());
+  //         tempId = '';
+  //       } else {
+  //         tempId += categoryIds[i];
+  //       }
+  //     }
+  //     if (tempId) {
+  //       parsedCategoryIds.push(tempId.trim());
+  //     }
+
+  //     const categories = await this.categoryRepository.find({
+  //       where: { id: In(parsedCategoryIds) },
+  //     });
+  //     if (parsedCategoryIds.length !== categories.length) {
+  //       throw new NotFoundException('One or more categories not found');
+  //     }
+  //     existingProduct.categories = [
+  //       ...new Set([...existingProduct.categories, ...categories]),
+  //     ];
+  //   }
+
+  //   const product = await this.productRepository.preload({
+  //     id,
+  //     ...updateData,
+  //     images,
+  //     linkedProducts: existingProduct.linkedProducts,
+  //     categories: existingProduct.categories,
+  //   });
+  //   console.log('3deeeeeeeeeeet');
+  //   console.log(product);
+
+  //   if (!product) {
+  //     throw new NotFoundException(`Product with ID ${id} not found`);
+  //   }
+
+  //   return this.productRepository.save(product);
+  // }
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    let { categoryIds, images, linkedProducts, ...updateData } =
+    var { categoryIds, images, linkedProducts, ...updateData } =
       updateProductDto;
-    // Fetch the existing product
-    const existingProduct = await this.productRepository.findOne({
-      where: { id },
-    });
-    if (!existingProduct) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+    if (!images) {
+      images=[];
     }
-
-    // Merge images
-    if (images) {
-      images = [...new Set([...existingProduct.images, ...images])];
-    }
-
     // Parse and merge linkedProducts
     let parsedLinkedProductEntities: string[] = [];
-    if (linkedProducts) {
-      let tempId2 = '';
-      for (let i = 0; i < linkedProducts.length; i++) {
-        if (linkedProducts[i] === ',') {
-          parsedLinkedProductEntities.push(tempId2.trim());
-          tempId2 = '';
-        } else {
-          tempId2 += linkedProducts[i];
-        }
-      }
-      if (tempId2) {
+    let tempId2 = '';
+    for (let i = 0; i < linkedProducts.length; i++) {
+      if (linkedProducts[i] === ',') {
         parsedLinkedProductEntities.push(tempId2.trim());
+        tempId2 = '';
+      } else {
+        tempId2 += linkedProducts[i];
       }
-      const linkedProductEntities = linkedProducts
-        ? await this.productRepository.find({
-            where: { id: In(parsedLinkedProductEntities) },
-          })
-        : [];
-      if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
-        throw new NotFoundException('One or more linked products not found');
-      }
-      existingProduct.linkedProducts = [
-        ...new Set([
-          ...existingProduct.linkedProducts,
-          ...linkedProductEntities,
-        ]),
-      ];
     }
+    if (tempId2) {
+      parsedLinkedProductEntities.push(tempId2.trim());
+    }
+    const linkedProductEntities = linkedProducts
+      ? await this.productRepository.find({
+          where: { id: In(parsedLinkedProductEntities) },
+        })
+      : [];
+    if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
+      throw new NotFoundException('One or more linked products not found');
+    }
+    console.log('abllllllll el await');
+    const product = await this.productRepository.preload({
+      id,
+      ...updateData,
+      images,
+      linkedProducts: linkedProductEntities,
+    });
+    console.log('ba3ddd el await');
 
-    //////////////////////////
     let parsedCategoryIds: string[] = [];
-
     if (categoryIds) {
       let tempId = '';
       for (let i = 0; i < categoryIds.length; i++) {
@@ -259,24 +341,12 @@ export class ProductService {
       if (parsedCategoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');
       }
-      existingProduct.categories = [
-        ...new Set([...existingProduct.categories, ...categories]),
-      ];
+      product.categories = categories;
     }
-
-    const product = await this.productRepository.preload({
-      id,
-      ...updateData,
-      images,
-      linkedProducts: existingProduct.linkedProducts,
-      categories: existingProduct.categories,
-    });
-    console.log('3deeeeeeeeeeet');
-    console.log(product);
-
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+    console.log(product);
 
     return this.productRepository.save(product);
   }
