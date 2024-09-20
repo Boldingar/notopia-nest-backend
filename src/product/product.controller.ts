@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   ValidationPipe,
   UsePipes,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,6 +29,7 @@ import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 import { Product } from './entities/product.entity';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 // Multer storage configuration
 
@@ -182,4 +184,24 @@ export class ProductController {
   search(@Param('search') name: string): Promise<Product[]> {
     return this.productService.searchProductsByName(name);
   }
+
+  @ApiOperation({ summary: 'Get all products paginated' })
+  @ApiResponse({ status: 200, description: 'List of all paginated products' })
+  @Get('list/paginated')
+  async findAllpaginate(
+    @Query('page') page: string = '1', // Ensure it's a string initially
+    @Query('limit') limit: string = '10', // Ensure it's a string initially
+  ): Promise<{ data: Product[], total: number }> {
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+  
+    // Make sure invalid numbers are handled properly
+    const validPage = pageNumber > 0 ? pageNumber : 1;
+    const validLimit = limitNumber > 0 ? limitNumber : 10;
+    console.log("Valid Page: ", validPage);
+    console.log("valid Limit", validLimit);
+    
+    return this.productService.findAllPaginated(validPage, validLimit);
+  }
+  
 }

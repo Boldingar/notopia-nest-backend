@@ -11,6 +11,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductType } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { validate as uuidValidate } from 'uuid';
+import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService {
@@ -219,4 +220,19 @@ export class ProductService {
       throw new InternalServerErrorException('Failed to search products');
     }
   }
+
+  async findAllPaginated(page: number, limit: number): Promise<{ data: Product[], total: number }> {
+    const take = Math.max(1, limit); // At least 1 item per page
+    const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
+
+    console.log(`Pagination -> page: ${page}, limit: ${limit}, take: ${take}, skip: ${skip}`);
+
+    const [result, total] = await this.productRepository.findAndCount({
+        take,
+        skip,
+    });
+
+    return { data: result, total };
+}
+
 }
