@@ -28,5 +28,5 @@ export class Address {
   district: string;
 
   @ManyToOne(() => User, user => user.addresses)
-  User: User; // Establish the relationship with User entity
+  User: User;
 }

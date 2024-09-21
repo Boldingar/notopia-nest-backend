@@ -16,7 +16,6 @@ export class DeliveryService {
   ) {}
 
   async create(createDeliveryDto: CreateDeliveryDto) {
-    // Create the delivery object first
     const newDelivery: Delivery = this.deliveryRepository.create({
       ...createDeliveryDto,
     });

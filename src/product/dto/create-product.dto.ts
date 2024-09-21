@@ -9,7 +9,7 @@ import {
   IsEnum,
   IsNotEmpty,
 } from 'class-validator';
-import { ProductType } from '../entities/product.entity'; // Import the enum from your entity
+import { ProductType } from '../entities/product.entity'; 
 
 export class CreateProductDto {
   @ApiProperty({

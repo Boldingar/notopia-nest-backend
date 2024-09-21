@@ -28,7 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, join(__dirname, '..', '..', 'src', 'images', 'categories')); // Absolute path to images/product
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'categories')); 
   },
   filename: (req, file, cb) => {
     const ext = file.mimetype.split('/')[1];

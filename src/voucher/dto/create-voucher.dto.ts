@@ -8,7 +8,7 @@ export class CreateVoucherDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string; // The voucher name must be a non-empty string
+  name: string; 
 
   @ApiProperty({
     example: 15.5,
@@ -16,7 +16,7 @@ export class CreateVoucherDto {
     required: false,
   })
   @IsDecimal()
-  @ValidateIf(o => o.discountValue === undefined) // Ensures discountPercentage is used only if discountValue is not present
+  @ValidateIf(o => o.discountValue === undefined) 
   @Min(0)
   @Max(100)
   discountPercentage?: number;
@@ -27,7 +27,7 @@ export class CreateVoucherDto {
     required: false,
   })
   @IsDecimal()
-  @ValidateIf(o => o.discountPercentage === undefined) // Ensures discountValue is used only if discountPercentage is not present
+  @ValidateIf(o => o.discountPercentage === undefined) 
   @Min(0)
   discountValue?: number;
 
@@ -38,5 +38,5 @@ export class CreateVoucherDto {
   })
   @IsNotEmpty()
   @IsDate()
-  endDate: Date; // End date is now required
+  endDate: Date;
 }

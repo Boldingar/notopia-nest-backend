@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
-@ApiTags('user') // Group the controller under 'user' in Swagger UI
+@ApiTags('user') 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -60,7 +60,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
   @Patch(':id')
-  @ApiBody({ type: UpdateUserDto }) // Document the body input for the update
+  @ApiBody({ type: UpdateUserDto })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
@@ -100,7 +100,6 @@ export class UserController {
     return this.userService.checkOut(userId, addressIndex, voucherName );
   }
 
-  // New route to get all products in the user's cart
   @ApiOperation({ summary: 'Get all products in the user\'s cart' })
   @ApiResponse({ status: 200, description: 'List of products in the cart' })
   @ApiResponse({ status: 404, description: 'User not found.' })

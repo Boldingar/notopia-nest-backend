@@ -36,17 +36,17 @@ export class User {
 
   @ManyToMany(() => Product)
   @JoinTable()
-  cart: Product[]; // Establish the many-to-many relationship with Product for cart
+  cart: Product[];
 
   @ManyToMany(() => Product)
   @JoinTable()
-  wishlist: Product[]; // Establish the many-to-many relationship with Product for wishlist
+  wishlist: Product[];
 
   @OneToMany(() => Address, address => address.User)
-  addresses: Address[]; // Establish the relationship with Address entity
+  addresses: Address[]; 
 
   @OneToMany(() => Order, order => order.user)
-  orders: Order[]; // Establish the relationship with Order entity
+  orders: Order[];
 
   @CreateDateColumn()
   createdAt: Date;

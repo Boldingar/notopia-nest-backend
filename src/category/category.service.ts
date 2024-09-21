@@ -23,14 +23,12 @@ export class CategoryService {
     try {
       const { categoryName, categoryImgUrl } = createCategoryDto;
 
-      // Create a new instance of Category entity
       const category = this.categoryRepository.create({
         categoryName,
         categoryImgUrl,
         products: [],
       });
 
-      // Save the category to the database
       return this.categoryRepository.save(category);
     } catch (error) {
       console.error('Error creating category:', error);
@@ -62,7 +60,6 @@ export class CategoryService {
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
 
-    // Return only the products, not the category itself
     return category.products;
   }
 

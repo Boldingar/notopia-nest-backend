@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, CreateDateColumn } from 'typeorm';
-import { Product } from 'src/product/entities/product.entity'; // Import the Product entity
-import { User } from 'src/user/entities/user.entity'; // Import the User entity
+import { Product } from 'src/product/entities/product.entity'; 
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Order {
@@ -10,7 +10,7 @@ export class Order {
   @ManyToOne(() => User, user => user.orders)
   user: User;
 
-  @ManyToMany(() => Product, { eager: true }) // Define many-to-many relationship with Product
+  @ManyToMany(() => Product, { eager: true })
   @JoinTable()
   products: Product[];
 

@@ -12,7 +12,7 @@ import { ReviewModule } from './review/review.module';
 import { AddressModule } from './address/address.module';
 import { TagModule } from './tag/tag.module';
 import { CategoryModule } from './category/category.module';
-import { Delivery } from './delivery/entities/delivery.entity'; // Adjust the import path accordingly
+import { Delivery } from './delivery/entities/delivery.entity';
 
 
 import { User } from './user/entities/user.entity';
@@ -31,8 +31,8 @@ import { Brand } from './brand/entities/brand.entity';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'src', 'images'), // path to your images folder // Points to src/images
-      serveRoot: '/images', // this is how the path will appear in the URL
+      rootPath: join(process.cwd(), 'src', 'images'), 
+      serveRoot: '/images',
     }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -48,7 +48,7 @@ import { Brand } from './brand/entities/brand.entity';
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
         ssl: {
-          rejectUnauthorized: false, // You may need to adjust this depending on your SSL setup
+          rejectUnauthorized: false, 
         },
         entities: [
           User,

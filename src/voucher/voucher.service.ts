@@ -12,27 +12,22 @@ export class VoucherService {
     private readonly voucherRepository: Repository<Voucher>,
   ) {}
 
-  // Create a new voucher
   async create(createVoucherDto: CreateVoucherDto): Promise<Voucher> {
     const { discountPercentage, discountValue } = createVoucherDto;
 
-    // Validate that either discountPercentage or discountValue is provided, but not both
     if ((discountPercentage !== undefined && discountValue !== undefined) ||
         (discountPercentage === undefined && discountValue === undefined)) {
       throw new BadRequestException('You must provide either discountPercentage or discountValue, but not both.');
     }
 
-    // Create and save the new voucher
     const newVoucher = this.voucherRepository.create(createVoucherDto);
     return this.voucherRepository.save(newVoucher);
   }
 
-  // Find all vouchers
   async findAll(): Promise<Voucher[]> {
     return this.voucherRepository.find();
   }
 
-  // Find one voucher by ID
   async findOne(id: string): Promise<Voucher> {
     const voucher = await this.voucherRepository.findOne({
       where: { id },
@@ -43,17 +38,14 @@ export class VoucherService {
     return voucher;
   }
 
-  // Update a voucher by ID
   async update(id: string, updateVoucherDto: UpdateVoucherDto): Promise<Voucher> {
     const { discountPercentage, discountValue } = updateVoucherDto;
 
-    // Validate that either discountPercentage or discountValue is provided, but not both
     if ((discountPercentage !== undefined && discountValue !== undefined) ||
         (discountPercentage === undefined && discountValue === undefined)) {
       throw new BadRequestException('You must provide either discountPercentage or discountValue, but not both.');
     }
 
-    // Preload the existing voucher and update it
     const voucher = await this.voucherRepository.preload({
       id: id,
       ...updateVoucherDto,
@@ -65,7 +57,6 @@ export class VoucherService {
     return this.voucherRepository.save(voucher);
   }
 
-  // Remove a voucher by ID
   async remove(id: string): Promise<void> {
     const result = await this.voucherRepository.delete(id);
     if (result.affected === 0) {

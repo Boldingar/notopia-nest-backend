@@ -39,7 +39,6 @@ export class DeliveryController {
     return this.deliveryService.create(createDeliveryDto);
   }
 
-  // get all orders with status "InProgress" to display them to the admin
   @ApiOperation({ summary: 'Get Pending orders' })
   @ApiResponse({ status: 200, description: 'List of all orders' })
   @ApiResponse({ status: 404, description: 'Deliveries not found' })

@@ -19,7 +19,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
 
-@ApiTags('order') // Group the controller under 'order' in Swagger UI
+@ApiTags('order')
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
@@ -31,7 +31,7 @@ export class OrderController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
-  @ApiBody({ type: CreateOrderDto }) // Document the body input
+  @ApiBody({ type: CreateOrderDto }) 
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
@@ -67,7 +67,7 @@ export class OrderController {
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
   @Patch(':id')
-  @ApiBody({ type: UpdateOrderDto }) // Document the body input for the update
+  @ApiBody({ type: UpdateOrderDto })
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.orderService.update(id, updateOrderDto);
   }

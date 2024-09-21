@@ -19,7 +19,7 @@ export class UpdateVoucherDto extends PartialType(CreateVoucherDto) {
   })
   @IsOptional()
   @IsDecimal()
-  @ValidateIf(o => o.discountValue === undefined) // Ensures discountPercentage is updated only if discountValue is not provided
+  @ValidateIf(o => o.discountValue === undefined) 
   @Min(0)
   @Max(100)
   discountPercentage?: number;
@@ -31,7 +31,7 @@ export class UpdateVoucherDto extends PartialType(CreateVoucherDto) {
   })
   @IsOptional()
   @IsDecimal()
-  @ValidateIf(o => o.discountPercentage === undefined) // Ensures discountValue is updated only if discountPercentage is not provided
+  @ValidateIf(o => o.discountPercentage === undefined) 
   @Min(0)
   discountValue?: number;
 

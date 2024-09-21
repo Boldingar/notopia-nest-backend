@@ -10,7 +10,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Order } from 'src/order/entities/order.entity';
-import { User } from 'src/user/entities/user.entity'; // Assuming delivery-man is a user
+import { User } from 'src/user/entities/user.entity'; 
 
 @Entity()
 export class Delivery {
@@ -28,8 +28,8 @@ export class Delivery {
   currentOrder?: Order;
 
   @Column({ type: 'timestamp', nullable: true })
-  dateOfAssignment?: Date; // Date when the delivery task was assigned
+  dateOfAssignment?: Date; 
 
   @Column({ type: 'timestamp', nullable: true })
-  dateOfDelivered?: Date; // Date when the delivery was completed
+  dateOfDelivered?: Date; 
 }

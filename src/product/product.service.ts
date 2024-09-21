@@ -13,7 +13,6 @@ import { Category } from 'src/category/entities/category.entity';
 import { validate as uuidValidate } from 'uuid';
 import { Brand } from 'src/brand/entities/brand.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
-// import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService {
@@ -49,17 +48,14 @@ export class ProductService {
           tempTagId += tagsId[i];
         }
       }
-      // Push the last id
       if (tempTagId) {
         parsedTagsIds.push(tempTagId.trim());
       }
 
-      // Ensure tagsId is an array
       if (!Array.isArray(parsedTagsIds)) {
         throw new BadRequestException('tagsId must be an array');
       }
 
-      // Fetch the categories
       const tags = await this.tagRepository.find({
         where: { id: In(parsedTagsIds) },
       });
@@ -69,7 +65,6 @@ export class ProductService {
       }
       /////////////////CATEGORY////////////////////
       let parsedCategoryIds: string[] = [];
-      // Ensure categoryIds is an array of strings
       let tempId = '';
       for (let i = 0; i < categoryIds.length; i++) {
         if (categoryIds[i] === ',') {
@@ -79,17 +74,14 @@ export class ProductService {
           tempId += categoryIds[i];
         }
       }
-      // Push the last id
       if (tempId) {
         parsedCategoryIds.push(tempId.trim());
       }
 
-      // Ensure categoryIds is an array
       if (!Array.isArray(parsedCategoryIds)) {
         throw new BadRequestException('categoryIds must be an array');
       }
 
-      // Fetch the categories
       const categories = await this.categoryRepository.find({
         where: { id: In(parsedCategoryIds) },
       });
@@ -99,7 +91,6 @@ export class ProductService {
       }
       /////////////////LINKEDPRODUCTS/////////////
       let parsedLinkedProductEntities: string[] = [];
-      // Ensure linkedProducts is an array of strings
       let tempId2 = '';
       for (let i = 0; i < linkedProducts.length; i++) {
         if (linkedProducts[i] === ',') {
@@ -109,16 +100,13 @@ export class ProductService {
           tempId2 += linkedProducts[i];
         }
       }
-      // Push the last id
       if (tempId2) {
         parsedLinkedProductEntities.push(tempId2.trim());
       }
-      // Ensure linkedProducts is an array
       if (!Array.isArray(parsedLinkedProductEntities)) {
         throw new BadRequestException('linkedProducts must be an array');
       }
 
-      // Fetch the linked products
       const linkedProductEntities = linkedProducts
         ? await this.productRepository.find({
             where: { id: In(parsedLinkedProductEntities) },
@@ -133,14 +121,13 @@ export class ProductService {
       if (brandId && !brand) {
         throw new NotFoundException('Brand not found');
       }
-      // Create the product
       const product = this.productRepository.create({
         ...productData,
-        categories, // Set categories
+        categories,
         brand,
         images,
         tags,
-        linkedProducts: linkedProductEntities, // Set linked products
+        linkedProducts: linkedProductEntities,
       });
 
       return await this.productRepository.save(product);
@@ -154,8 +141,8 @@ export class ProductService {
     page: number,
     limit: number,
   ): Promise<{ data: Product[]; total: number }> {
-    const take = Math.max(1, limit); // At least 1 item per page
-    const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take); 
 
     const [result, total] = await this.productRepository.findAndCount({
       relations: ['categories', 'linkedProducts', 'brand'],
@@ -256,7 +243,6 @@ export class ProductService {
     if (!images) {
       images = [];
     }
-    // Parse and merge linkedProducts
     let parsedLinkedProductEntities: string[] = [];
     let tempId2 = '';
     for (let i = 0; i < linkedProducts.length; i++) {
@@ -375,10 +361,9 @@ export class ProductService {
   async getRelatedProducts(
     productId: string,
   ): Promise<{ product: Product; mutualTagCount: number }[]> {
-    // Step 1: Find the product by its ID
     const product = await this.productRepository.findOne({
       where: { id: productId },
-      relations: ['tags'], // Assuming the product entity has a relation to the tags
+      relations: ['tags'],
     });
 
     if (!product) {
@@ -391,7 +376,6 @@ export class ProductService {
       return [];
     }
 
-    // Step 2: Fetch related products that share tags with the given product
     const relatedProducts = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.tags', 'tag')
@@ -399,9 +383,7 @@ export class ProductService {
       .andWhere('product.id != :productId', { productId })
       .getMany();
 
-    // Step 3: Calculate the number of mutual tags for each related product
     const productsWithMutualTagCount = relatedProducts.map((relatedProduct) => {
-      // Count mutual tags between current product and related product
       const mutualTagCount = relatedProduct.tags.filter((tag) =>
         tags.some((productTag) => productTag.id === tag.id),
       ).length;
@@ -412,12 +394,10 @@ export class ProductService {
       };
     });
 
-    // Step 4: Sort products by the number of mutual tags in descending order
     productsWithMutualTagCount.sort(
       (a, b) => b.mutualTagCount - a.mutualTagCount,
     );
 
-    // Step 5: Return the sorted products with their mutual tag counts
     return productsWithMutualTagCount;
   }
 }

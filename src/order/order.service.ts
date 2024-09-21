@@ -27,16 +27,14 @@ export class OrderService {
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const { userId, productIds, price, status } = createOrderDto;
 
-    // Find the user associated with the order and include the 'orders' relation
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['orders'], // Ensure the orders relation is fetched
+      relations: ['orders'], 
     });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // Find the products associated with the order
     const products = await this.productRepository.findBy({
       id: In(productIds),
     });
@@ -44,18 +42,14 @@ export class OrderService {
       throw new NotFoundException('One or more products not found');
     }
 
-    // Create a new order instance
     const order = this.orderRepository.create({
       ...createOrderDto,
     });
 
-    // Save the order to the database
     const savedOrder = await this.orderRepository.save(order);
 
-    // Ensure user.orders is an array, even if it was undefined
     user.orders = user.orders || [];
 
-    // Update the user's orders array
     user.orders = [...user.orders, savedOrder];
     await this.userRepository.save(user);
 
@@ -89,7 +83,6 @@ export class OrderService {
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
     const { userId, productIds, price, status } = updateOrderDto;
 
-    // Find the existing order
     const order = await this.orderRepository.preload({
       id,
       ...updateOrderDto,
@@ -99,14 +92,12 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    // If a new user is provided, update the user's orders array
     if (userId) {
       const user = await this.userRepository.findOneBy({ id: userId });
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
-      // Update the previous user's orders array to remove the order
       if (order.user) {
         const previousUser = await this.userRepository.findOneBy({
           id: order.user.id,
@@ -117,14 +108,12 @@ export class OrderService {
         }
       }
 
-      // Update the current user's orders array
       user.orders = [...user.orders, order];
       await this.userRepository.save(user);
 
       order.user = user;
     }
 
-    // If new products are provided, update the order's products
     if (productIds) {
       const products = await this.productRepository.findBy({
         id: In(productIds),

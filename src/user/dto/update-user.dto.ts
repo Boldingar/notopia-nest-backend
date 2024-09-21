@@ -73,7 +73,7 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsArray()
-  cart?: Product[]; // Optional, to update the cart
+  cart?: Product[];
 
   @ApiProperty({
     example: [
@@ -89,5 +89,5 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsArray()
-  wishlist?: Product[]; // Optional, to update the wishlist
+  wishlist?: Product[]; 
 }

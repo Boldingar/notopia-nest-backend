@@ -66,7 +66,7 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsArray()
-  cart?: Product[]; // Optional, as it can be added later
+  cart?: Product[];
 
   @ApiProperty({
     example: [

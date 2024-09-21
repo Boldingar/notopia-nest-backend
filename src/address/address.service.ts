@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
-import { User } from 'src/user/entities/user.entity'; // Import User entity
+import { User } from 'src/user/entities/user.entity'; 
 
 @Injectable()
 export class AddressService {
@@ -18,29 +18,24 @@ export class AddressService {
   async create(createAddressDto: CreateAddressDto): Promise<Address> {
     const { userId, ...addressData } = createAddressDto;
 
-    // Find the user associated with the address
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['addresses'], // Ensure we fetch existing addresses
+      relations: ['addresses'],
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // Create a new address instance
     const address = this.addressRepository.create({
       ...addressData,
       User: user,
     });
 
-    // Save the new address
     const savedAddress = await this.addressRepository.save(address);
 
-    // Update the user's addresses array
     user.addresses.push(savedAddress);
 
-    // Save the updated user entity
     await this.userRepository.save(user);
 
     return savedAddress;

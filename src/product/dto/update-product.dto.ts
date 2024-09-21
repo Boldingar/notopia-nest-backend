@@ -8,7 +8,7 @@ import {
   IsUUID,
   IsEnum,
 } from 'class-validator';
-import { ProductType } from '../entities/product.entity'; // Import the enum
+import { ProductType } from '../entities/product.entity'; 
 
 export class UpdateProductDto {
   @ApiProperty({

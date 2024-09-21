@@ -47,5 +47,5 @@ export class CreateOrderDto {
     required: false,
   })
   @IsOptional()
-  deliveryId?: string; // New property for delivery ID
+  deliveryId?: string;
 }

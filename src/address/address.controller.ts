@@ -6,7 +6,7 @@ import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
 
 
-@ApiTags('address') // Group the controller under 'address' in Swagger UI
+@ApiTags('address') 
 @Controller('address')
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
@@ -15,7 +15,7 @@ export class AddressController {
   @ApiResponse({ status: 201, description: 'The address has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
-  @ApiBody({ type: CreateAddressDto }) // Document the body input
+  @ApiBody({ type: CreateAddressDto })
   create(@Body() createAddressDto: CreateAddressDto) {
     return this.addressService.create(createAddressDto);
   }
@@ -41,7 +41,7 @@ export class AddressController {
   @ApiResponse({ status: 404, description: 'Address not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
   @Patch(':id')
-  @ApiBody({ type: UpdateAddressDto }) // Document the body input for the update
+  @ApiBody({ type: UpdateAddressDto })
   update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
     return this.addressService.update(id, updateAddressDto);
   }

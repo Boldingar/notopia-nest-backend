@@ -15,7 +15,7 @@ export class Voucher {
   discountValue?: number;
 
   @CreateDateColumn({ type: 'timestamp' })
-  startDate: Date; // Auto-created start date
+  startDate: Date;
 
   @Column({ type: 'timestamp'})
   endDate: Date;

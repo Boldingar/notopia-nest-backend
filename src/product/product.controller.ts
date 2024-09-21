@@ -30,20 +30,18 @@ import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 import { Product } from './entities/product.entity';
-// import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
-// Multer storage configuration
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, join(__dirname, '..', '..', 'src', 'images', 'product')); // Absolute path to images/product
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'product')); 
   },
   filename: (req, file, cb) => {
     const ext = file.mimetype.split('/')[1];
     cb(null, `product-${uuidv4()}.${ext}`);
   },
 });
-@ApiTags('product') // Group the controller under 'product' in Swagger UI
+@ApiTags('product') 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
@@ -57,7 +55,7 @@ export class ProductController {
   @Post()
   @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: CreateProductDto }) // Document the body input
+  @ApiBody({ type: CreateProductDto })
   async create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles() files: Express.Multer.File[],
@@ -71,7 +69,6 @@ export class ProductController {
       .slice(1)
       .map((file) => `/images/product/${file.filename}`);
 
-    // Assign mainImage and images to DTO
     createProductDto.mainImage = mainImagePath;
     createProductDto.images = imagePaths;
     return this.productService.create(createProductDto);
@@ -173,7 +170,6 @@ export class ProductController {
       .slice(1)
       .map((file) => `/images/product/${file.filename}`);
 
-    // Assign mainImage and images to DTO
     updateProductDto.mainImage = mainImagePath;
     updateProductDto.images = imagePaths;
     return this.productService.update(id, updateProductDto);
