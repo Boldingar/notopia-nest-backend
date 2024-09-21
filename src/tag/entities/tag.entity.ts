@@ -9,9 +9,6 @@ export class Tag {
   @Column({ length: 100 })
   name: string;
 
-  @Column('text', { nullable: true })
-  imgUrl: string;
-
   @ManyToMany(() => Product, (product) => product.tags)
   products: Product[];
 }
