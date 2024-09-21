@@ -18,11 +18,10 @@ export class TagService {
 
   async create(createTagDto: CreateTagDto): Promise<Tag> {
     try {
-      const { name, imgUrl } = createTagDto;
+      const { name } = createTagDto;
 
       const tag = this.tagRepository.create({
         name,
-        imgUrl,
         products: [],
       });
 
