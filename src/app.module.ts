@@ -26,6 +26,7 @@ import { Category } from './category/entities/category.entity';
 import { BrandModule } from './brand/brand.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { Brand } from './brand/entities/brand.entity';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
           Tag,
           Category,
           Delivery,
+          Brand,
         ],
         synchronize: true,
       }),

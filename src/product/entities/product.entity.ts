@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, JoinColumn } from 'typeorm';
 import { Category } from 'src/category/entities/category.entity';
+import { Brand } from 'src/brand/entities/brand.entity';
+import { Tag } from 'src/tag/entities/tag.entity';
 
 export enum ProductType {
   MAIN = 'Main',
@@ -49,6 +51,14 @@ export class Product {
   })
   categories: Category[];
 
+  @ManyToMany(() => Tag, (tag) => tag.products)
+  @JoinTable({
+    name: 'product_tags',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: Tag[];
+
   @Column({
     type: 'enum',
     enum: ProductType,
@@ -66,4 +76,8 @@ export class Product {
     },
   })
   linkedProducts: Product[];
+
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn({ name: 'brandId' }) 
+  brand: Brand;
 }

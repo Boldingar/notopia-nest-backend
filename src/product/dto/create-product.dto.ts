@@ -96,10 +96,32 @@ export class CreateProductDto {
       type: 'string',
     },
     example: ['25bfe954-4514-4934-8070-198bc37f82a1', 'another-uuid'],
-    required: false,
+    required: true,
   })
   @IsUUID('4', { each: true })
   categoryIds: string[];
+
+  @IsNotEmpty()
+  @ApiProperty({
+    type: 'string',
+    example: ['25bfe954-4514-4934-8070-198bc37f82a1', 'another-uuid'],
+    required: false,
+  })
+  @IsUUID('4', { each: true })
+  brandId: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'string',
+    },
+    example: ['25bfe954-4514-4934-8070-198bc37f82a1', 'another-uuid'],
+    required: false,
+  })
+  @IsUUID('4', { each: true })
+  tagsId: string[];
 
   @ApiProperty({
     example: 'Main',

@@ -11,6 +11,7 @@ import {
   ValidationPipe,
   UsePipes,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -155,7 +156,7 @@ export class ProductController {
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @Patch(':id')
-  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
+  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }),FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UpdateProductDto })
   async update(
@@ -212,5 +213,15 @@ export class ProductController {
     @Query('limit') limit: number = 10,
   ): Promise<{ data: Product[]; total: number }> {
     return this.productService.searchProductsByName(name, page, limit);
+  }
+
+  @ApiOperation({ summary: 'Search products by brand' })
+  @Get('/brand/:brandId')
+  async findProductsByBrand(@Param('brandId') brandId: string): Promise<Product[]> {
+    const products = await this.productService.findProductsByBrand(brandId);
+    if (!products || products.length === 0) {
+      throw new NotFoundException(`No products found for Brand ID ${brandId}`);
+    }
+    return products;
   }
 }

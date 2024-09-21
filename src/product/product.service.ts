@@ -11,6 +11,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductType } from './entities/product.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { validate as uuidValidate } from 'uuid';
+import { Brand } from 'src/brand/entities/brand.entity';
+import { Tag } from 'src/tag/entities/tag.entity';
 // import { PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 
 @Injectable()
@@ -20,13 +22,53 @@ export class ProductService {
     private productRepository: Repository<Product>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(Brand)
+    private brandRepository: Repository<Brand>,
+    @InjectRepository(Tag)
+    private tagRepository: Repository<Tag>,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
+      const {
+        brandId,
+        categoryIds,
+        tagsId,
+        images,
+        linkedProducts,
+        ...productData
+      } = createProductDto;
+      ////////////TAGS/////////////////
+      let parsedTagsIds: string[] = [];
+      let tempTagId = '';
+      for (let i = 0; i < tagsId.length; i++) {
+        if (tagsId[i] === ',') {
+          parsedTagsIds.push(tempTagId.trim());
+          tempTagId = '';
+        } else {
+          tempTagId += tagsId[i];
+        }
+      }
+      // Push the last id
+      if (tempTagId) {
+        parsedTagsIds.push(tempTagId.trim());
+      }
+
+      // Ensure tagsId is an array
+      if (!Array.isArray(parsedTagsIds)) {
+        throw new BadRequestException('tagsId must be an array');
+      }
+
+      // Fetch the categories
+      const tags = await this.tagRepository.find({
+        where: { id: In(parsedTagsIds) },
+      });
+
+      if (parsedTagsIds.length !== tags.length) {
+        throw new NotFoundException('One or more tags not found');
+      }
+      /////////////////CATEGORY////////////////////
       let parsedCategoryIds: string[] = [];
-      const { categoryIds, images, linkedProducts, ...productData } =
-        createProductDto;
       // Ensure categoryIds is an array of strings
       let tempId = '';
       for (let i = 0; i < categoryIds.length; i++) {
@@ -55,7 +97,7 @@ export class ProductService {
       if (parsedCategoryIds.length !== categories.length) {
         throw new NotFoundException('One or more categories not found');
       }
-      ///////////////////////////
+      /////////////////LINKEDPRODUCTS/////////////
       let parsedLinkedProductEntities: string[] = [];
       // Ensure linkedProducts is an array of strings
       let tempId2 = '';
@@ -85,11 +127,19 @@ export class ProductService {
       if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
         throw new NotFoundException('One or more categories not found');
       }
+      const brand = brandId
+        ? await this.brandRepository.findOne({ where: { id: brandId } })
+        : null;
+      if (brandId && !brand) {
+        throw new NotFoundException('Brand not found');
+      }
       // Create the product
       const product = this.productRepository.create({
         ...productData,
         categories, // Set categories
+        brand,
         images,
+        tags,
         linkedProducts: linkedProductEntities, // Set linked products
       });
 
@@ -108,7 +158,7 @@ export class ProductService {
     const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
 
     const [result, total] = await this.productRepository.findAndCount({
-      relations: ['categories', 'linkedProducts'],
+      relations: ['categories', 'linkedProducts', 'brand'],
       take,
       skip,
     });
@@ -153,7 +203,7 @@ export class ProductService {
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['categories', 'linkedProducts'],
+      relations: ['categories', 'linkedProducts', 'brand'],
     });
 
     if (!product) {
@@ -186,108 +236,25 @@ export class ProductService {
     return { data: linkedProducts, total };
   }
 
-  // async update(
-  //   id: string,
-  //   updateProductDto: UpdateProductDto,
-  // ): Promise<Product> {
-  //   let { categoryIds, images, linkedProducts, ...updateData } =
-  //     updateProductDto;
-  //   // Fetch the existing product
-  //   const existingProduct = await this.productRepository.findOne({
-  //     where: { id },
-  //   });
-  //   if (!existingProduct) {
-  //     throw new NotFoundException(`Product with ID ${id} not found`);
-  //   }
+  async findProductsByBrand(brandId: string): Promise<Product[]> {
+    const brand = await this.brandRepository.findOne({
+      where: { id: brandId },
+    });
+    if (!brand) {
+      throw new NotFoundException(`Brand with ID ${brandId} not found`);
+    }
 
-  //   // Merge images
-  //   if (images) {
-  //     images = [...new Set([...existingProduct.images, ...images])];
-  //   }
+    return this.productRepository.find({ where: { brand } });
+  }
 
-  //   // Parse and merge linkedProducts
-  //   let parsedLinkedProductEntities: string[] = [];
-  //   if (linkedProducts) {
-  //     let tempId2 = '';
-  //     for (let i = 0; i < linkedProducts.length; i++) {
-  //       if (linkedProducts[i] === ',') {
-  //         parsedLinkedProductEntities.push(tempId2.trim());
-  //         tempId2 = '';
-  //       } else {
-  //         tempId2 += linkedProducts[i];
-  //       }
-  //     }
-  //     if (tempId2) {
-  //       parsedLinkedProductEntities.push(tempId2.trim());
-  //     }
-  //     const linkedProductEntities = linkedProducts
-  //       ? await this.productRepository.find({
-  //           where: { id: In(parsedLinkedProductEntities) },
-  //         })
-  //       : [];
-  //     if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
-  //       throw new NotFoundException('One or more linked products not found');
-  //     }
-  //     existingProduct.linkedProducts = [
-  //       ...new Set([
-  //         ...existingProduct.linkedProducts,
-  //         ...linkedProductEntities,
-  //       ]),
-  //     ];
-  //   }
-
-  //   //////////////////////////
-  //   let parsedCategoryIds: string[] = [];
-
-  //   if (categoryIds) {
-  //     let tempId = '';
-  //     for (let i = 0; i < categoryIds.length; i++) {
-  //       if (categoryIds[i] === ',') {
-  //         parsedCategoryIds.push(tempId.trim());
-  //         tempId = '';
-  //       } else {
-  //         tempId += categoryIds[i];
-  //       }
-  //     }
-  //     if (tempId) {
-  //       parsedCategoryIds.push(tempId.trim());
-  //     }
-
-  //     const categories = await this.categoryRepository.find({
-  //       where: { id: In(parsedCategoryIds) },
-  //     });
-  //     if (parsedCategoryIds.length !== categories.length) {
-  //       throw new NotFoundException('One or more categories not found');
-  //     }
-  //     existingProduct.categories = [
-  //       ...new Set([...existingProduct.categories, ...categories]),
-  //     ];
-  //   }
-
-  //   const product = await this.productRepository.preload({
-  //     id,
-  //     ...updateData,
-  //     images,
-  //     linkedProducts: existingProduct.linkedProducts,
-  //     categories: existingProduct.categories,
-  //   });
-  //   console.log('3deeeeeeeeeeet');
-  //   console.log(product);
-
-  //   if (!product) {
-  //     throw new NotFoundException(`Product with ID ${id} not found`);
-  //   }
-
-  //   return this.productRepository.save(product);
-  // }
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    var { categoryIds, images, linkedProducts, ...updateData } =
+    var { categoryIds, images, brandId, linkedProducts, ...updateData } =
       updateProductDto;
     if (!images) {
-      images=[];
+      images = [];
     }
     // Parse and merge linkedProducts
     let parsedLinkedProductEntities: string[] = [];
@@ -303,6 +270,12 @@ export class ProductService {
     if (tempId2) {
       parsedLinkedProductEntities.push(tempId2.trim());
     }
+    const brand = brandId
+      ? await this.brandRepository.findOne({ where: { id: brandId } })
+      : null;
+    if (brandId && !brand) {
+      throw new NotFoundException('Brand not found');
+    }
     const linkedProductEntities = linkedProducts
       ? await this.productRepository.find({
           where: { id: In(parsedLinkedProductEntities) },
@@ -316,6 +289,7 @@ export class ProductService {
       id,
       ...updateData,
       images,
+      brand,
       linkedProducts: linkedProductEntities,
     });
     console.log('ba3ddd el await');

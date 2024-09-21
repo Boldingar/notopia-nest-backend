@@ -6,7 +6,7 @@ import { Category } from './entities/category.entity';
 import { ProductModule } from 'src/product/product.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category]),forwardRef(() => ProductModule),],
+  imports: [TypeOrmModule.forFeature([Category]),forwardRef(() => ProductModule)],
   controllers: [CategoryController],
   providers: [CategoryService],
 })
