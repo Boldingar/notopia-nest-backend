@@ -156,7 +156,7 @@ export class ProductController {
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @Patch(':id')
-  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
+  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }),FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UpdateProductDto })
   async update(
