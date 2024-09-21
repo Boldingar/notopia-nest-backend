@@ -22,4 +22,8 @@ export class Order {
 
   @CreateDateColumn()
   date: Date;
+
+  
+  @Column({ nullable: true }) 
+  deliveryId: string;
 }

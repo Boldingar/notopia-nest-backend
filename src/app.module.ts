@@ -5,12 +5,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { OrderModule } from './order/order.module';
+import { DeliveryModule } from './delivery/delivery.module';
 import { ProductModule } from './product/product.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { ReviewModule } from './review/review.module';
 import { AddressModule } from './address/address.module';
 import { TagModule } from './tag/tag.module';
 import { CategoryModule } from './category/category.module';
+import { Delivery } from './delivery/entities/delivery.entity'; // Adjust the import path accordingly
+
 
 import { User } from './user/entities/user.entity';
 import { Order } from './order/entities/order.entity';
@@ -55,6 +58,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
           Address,
           Tag,
           Category,
+          Delivery,
         ],
         synchronize: true,
       }),
@@ -68,6 +72,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     TagModule,
     CategoryModule,
     BrandModule,
+    DeliveryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

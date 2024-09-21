@@ -50,4 +50,13 @@ export class UpdateOrderDto {
   })
   @IsOptional()
   date?: Date;
+
+  @ApiProperty({
+    example: 'd1234567-89ab-cdef-0123-456789abcdef',
+    description: 'ID of the delivery associated with the order',
+    required: false,
+  })
+  
+  @IsOptional()
+  deliveryId?: string; // New property for delivery ID
 }
