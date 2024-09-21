@@ -156,7 +156,7 @@ export class ProductController {
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @Patch(':id')
-  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }),FilesInterceptor('images', 15, { storage: multerStorage }))
+  @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: UpdateProductDto })
   async update(
@@ -217,11 +217,24 @@ export class ProductController {
 
   @ApiOperation({ summary: 'Search products by brand' })
   @Get('/brand/:brandId')
-  async findProductsByBrand(@Param('brandId') brandId: string): Promise<Product[]> {
+  async findProductsByBrand(
+    @Param('brandId') brandId: string,
+  ): Promise<Product[]> {
     const products = await this.productService.findProductsByBrand(brandId);
     if (!products || products.length === 0) {
       throw new NotFoundException(`No products found for Brand ID ${brandId}`);
     }
     return products;
+  }
+  @ApiOperation({ summary: 'Get related products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Products ranked relation',
+  })
+  @Get('relatedProducts/:productId')
+  async getRelatedProducts(
+  @Param('productId') productId: string,
+): Promise<{ product: Product; mutualTagCount: number }[]> {
+    return this.productService.getRelatedProducts(productId);
   }
 }

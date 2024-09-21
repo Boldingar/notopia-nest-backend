@@ -332,7 +332,6 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
-
   async findTopSellingProducts(): Promise<
     { productName: string; numberOfSales: number }[]
   > {
@@ -373,17 +372,52 @@ export class ProductService {
     return { data, total };
   }
 
-  //   async findAllPaginated(page: number, limit: number): Promise<{ data: Product[], total: number }> {
-  //     const take = Math.max(1, limit); // At least 1 item per page
-  //     const skip = Math.max(0, (page - 1) * take); // Ensure non-negative skip
+  async getRelatedProducts(
+    productId: string,
+  ): Promise<{ product: Product; mutualTagCount: number }[]> {
+    // Step 1: Find the product by its ID
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+      relations: ['tags'], // Assuming the product entity has a relation to the tags
+    });
 
-  //     console.log(`Pagination -> page: ${page}, limit: ${limit}, take: ${take}, skip: ${skip}`);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
 
-  //     const [result, total] = await this.productRepository.findAndCount({
-  //         take,
-  //         skip,
-  //     });
+    const tags = product.tags;
 
-  //     return { data: result, total };
-  // }
+    if (!tags || tags.length === 0) {
+      return [];
+    }
+
+    // Step 2: Fetch related products that share tags with the given product
+    const relatedProducts = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.tags', 'tag')
+      .where('tag.id IN (:...tagIds)', { tagIds: tags.map((tag) => tag.id) })
+      .andWhere('product.id != :productId', { productId })
+      .getMany();
+
+    // Step 3: Calculate the number of mutual tags for each related product
+    const productsWithMutualTagCount = relatedProducts.map((relatedProduct) => {
+      // Count mutual tags between current product and related product
+      const mutualTagCount = relatedProduct.tags.filter((tag) =>
+        tags.some((productTag) => productTag.id === tag.id),
+      ).length;
+
+      return {
+        product: relatedProduct,
+        mutualTagCount,
+      };
+    });
+
+    // Step 4: Sort products by the number of mutual tags in descending order
+    productsWithMutualTagCount.sort(
+      (a, b) => b.mutualTagCount - a.mutualTagCount,
+    );
+
+    // Step 5: Return the sorted products with their mutual tag counts
+    return productsWithMutualTagCount;
+  }
 }
