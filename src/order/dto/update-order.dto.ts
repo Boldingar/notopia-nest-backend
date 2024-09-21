@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsArray, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export class UpdateOrderDto {
   @ApiProperty({
@@ -14,7 +20,7 @@ export class UpdateOrderDto {
   @ApiProperty({
     example: [
       'b1d85e3e-1c2b-4e1e-b6a6-8c8d0e65c4d8',
-      'a3c95e4f-2d6b-4e1e-b6a6-8c8d0e65c4d9'
+      'a3c95e4f-2d6b-4e1e-b6a6-8c8d0e65c4d9',
     ],
     description: 'Optional array of product IDs',
     type: [String],
@@ -32,7 +38,7 @@ export class UpdateOrderDto {
   })
   @IsOptional()
   @IsNumber()
-  cost?: number;
+  price?: number;
 
   @ApiProperty({
     example: 'Shipped',
@@ -44,19 +50,10 @@ export class UpdateOrderDto {
   status?: string;
 
   @ApiProperty({
-    example: '2024-09-15T10:30:00Z',
-    description: 'Optional date of the order (auto-generated)',
-    required: false,
-  })
-  @IsOptional()
-  date?: Date;
-
-  @ApiProperty({
     example: 'd1234567-89ab-cdef-0123-456789abcdef',
     description: 'ID of the delivery associated with the order',
     required: false,
   })
-  
   @IsOptional()
-  deliveryId?: string; // New property for delivery ID
+  deliveryId?: string;
 }

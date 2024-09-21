@@ -15,15 +15,18 @@ export class Order {
   products: Product[];
 
   @Column('decimal', { precision: 10, scale: 2 })
-  cost: number;
+  price: number;
 
   @Column({ length: 50 })
   status: string;
 
-  @CreateDateColumn()
-  date: Date;
+  @CreateDateColumn({type:'timestamp'})
+  createdAtDate: Date;
 
-  
   @Column({ nullable: true }) 
   deliveryId: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deliveredAt?: Date;
+
 }

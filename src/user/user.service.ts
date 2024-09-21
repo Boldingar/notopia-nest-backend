@@ -163,7 +163,7 @@ export class UserService {
     const order = this.orderRepository.create({ 
       user,
       products,
-      cost: totalPrice, 
+      price: totalPrice, 
       status: 'Pending', 
     });
   
@@ -197,13 +197,14 @@ export class UserService {
 
   async getOrderedUsersPercentage(): Promise<{ orderedUsersCount: number; totalCustomersCount: number }> {
     const totalCustomersCount = await this.getTotalCustomers();
-    
+  
     const orderedUsersCount = await this.userRepository
       .createQueryBuilder('user')
-      .innerJoin('user.orders', 'order')
+      .innerJoin('user.orders', 'order') // Make sure to join properly
       .where('user.flag = :flag', { flag: 'customer' })
       .getCount();
-
+  
     return { orderedUsersCount, totalCustomersCount };
   }
+  
 }

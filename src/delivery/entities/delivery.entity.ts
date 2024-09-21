@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   OneToMany,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Order } from 'src/order/entities/order.entity';
 import { User } from 'src/user/entities/user.entity'; // Assuming delivery-man is a user
@@ -16,19 +17,19 @@ export class Delivery {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
-  @Column()
-  phoneNumber: number;
+  @Column({ unique: true })
+  phone: string;
 
-  
-  @Column(() => Order )
-  currentOrder: Order;
-
-  @CreateDateColumn()
-  dateOfAssignment: Date; // Date when the delivery task was assigned
+  @OneToOne(() => Order, { eager: true, nullable: true })
+  @JoinColumn()
+  currentOrder?: Order;
 
   @Column({ type: 'timestamp', nullable: true })
-  dateOfDelivered: Date; // Date when the delivery was completed
+  dateOfAssignment?: Date; // Date when the delivery task was assigned
+
+  @Column({ type: 'timestamp', nullable: true })
+  dateOfDelivered?: Date; // Date when the delivery was completed
 }

@@ -11,28 +11,25 @@ export class UpdateDeliveryDto {
     description: 'Order details',
   })
   @Column()
-  currentOrder: Order;
+  currentOrder?: Order;
 
   @Column({ length: 25 })
-  name: string;
+  name?: string;
 
   @Column({ length: 15, unique: true })
-  phone: string;
+  phone?: string;
 
   @ApiProperty({
-    example: '2024-09-15T10:30:00Z',
-    description: 'Date of delivery completeness',
+    required: false,
+  })
+  @Column()
+  dateOfAssingment?: Date;
+
+  @ApiProperty({
     required: false,
   })
   @IsOptional()
   dateOfDelivery?: Date;
 
-  @ApiProperty({
-    example: '2024-09-15T10:30:00Z',
-    description: 'Date of order assingment',
-    required: true,
-  })
-  @Column()
-  dateOfAssingment?: Date;
 
 }

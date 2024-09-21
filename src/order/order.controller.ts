@@ -1,5 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -11,7 +25,10 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @ApiOperation({ summary: 'Create a new order' })
-  @ApiResponse({ status: 201, description: 'The order has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The order has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
   @ApiBody({ type: CreateOrderDto }) // Document the body input
@@ -26,6 +43,13 @@ export class OrderController {
     return this.orderService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get all delivered orders' })
+  @ApiResponse({ status: 200, description: 'List of all orders' })
+  @Get('delivered')
+  findDelivered() {
+    return this.orderService.findDelivered();
+  }
+
   @ApiOperation({ summary: 'Get an order by ID' })
   @ApiResponse({ status: 200, description: 'Order found' })
   @ApiResponse({ status: 404, description: 'Order not found' })
@@ -36,7 +60,10 @@ export class OrderController {
   }
 
   @ApiOperation({ summary: 'Update an order' })
-  @ApiResponse({ status: 200, description: 'The order has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The order has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
   @Patch(':id')
@@ -57,7 +84,12 @@ export class OrderController {
   @ApiOperation({ summary: 'Get orders by user ID' })
   @ApiResponse({ status: 200, description: 'List of orders', type: [Order] })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiParam({ name: 'userId', type: String, required: true, description: 'User ID' })
+  @ApiParam({
+    name: 'userId',
+    type: String,
+    required: true,
+    description: 'User ID',
+  })
   @Get('user/:userId')
   getOrdersByUserId(@Param('userId') userId: string): Promise<Order[]> {
     return this.orderService.findOrdersByUserId(userId);
