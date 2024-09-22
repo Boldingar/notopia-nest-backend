@@ -117,7 +117,6 @@ export class OrderService {
         }
       }
 
-      // Update the current user's orders array
       user.orders = [...user.orders, order];
       await this.userRepository.save(user);
 
