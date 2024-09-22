@@ -4,13 +4,16 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
-@ApiTags('user') 
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'The user has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
   @ApiBody({ type: CreateUserDto })
@@ -19,15 +22,25 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Get the number of users who already ordered once' })
-  @ApiResponse({ status: 200, description: 'Number and percentage of users who already ordered once.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Number and percentage of users who already ordered once.',
+  })
   @Get('orderedUsersPercentage')
-  async getOrderedUsersPercentage(): Promise<{ orderedUsersCount: number; percentage: number }> {
-    const { orderedUsersCount, totalCustomersCount } = await this.userService.getOrderedUsersPercentage();
+  async getOrderedUsersPercentage(): Promise<{
+    orderedUsersCount: number;
+    percentage: number;
+  }> {
+    const { orderedUsersCount, totalCustomersCount } =
+      await this.userService.getOrderedUsersPercentage();
 
-    const percentage = totalCustomersCount > 0 
-    ? parseFloat(((orderedUsersCount / totalCustomersCount) * 100).toFixed(2))
-    : 0;
-    
+    const percentage =
+      totalCustomersCount > 0
+        ? parseFloat(
+            ((orderedUsersCount / totalCustomersCount) * 100).toFixed(2),
+          )
+        : 0;
+
     return { orderedUsersCount, percentage };
   }
 
@@ -46,6 +59,15 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get a user by phone' })
+  @ApiResponse({ status: 200, description: 'User found' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'phone', type: String, description: 'phone of the user' })
+  @Get(':phone')
+  async findOneByPhone(@Param('phone') phone: string) {
+    return this.userService.findOneByPhone(phone);
+  }
+
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'User found' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -56,7 +78,10 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Update a user' })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated.',
+  })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
   @Patch(':id')
@@ -74,33 +99,41 @@ export class UserController {
     return this.userService.remove(id);
   }
 
-  @ApiOperation({ summary: 'Add a product to the user\'s cart' })
-  @ApiResponse({ status: 200, description: 'The product has been added to the cart.' })
+  @ApiOperation({ summary: "Add a product to the user's cart" })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been added to the cart.',
+  })
   @ApiResponse({ status: 404, description: 'User or product not found.' })
   @ApiResponse({ status: 400, description: 'Invalid product or user.' })
   @Post(':userId/cart/:productId')
   async addToCart(
     @Param('userId') userId: string,
-    @Param('productId') productId: string
+    @Param('productId') productId: string,
   ) {
     return this.userService.addToCart(userId, productId);
   }
 
-  @ApiOperation({ summary: 'Check out the user\'s cart' })
+  @ApiOperation({ summary: "Check out the user's cart" })
   @ApiResponse({ status: 201, description: 'Order has been created.' })
   @ApiResponse({ status: 404, description: 'User or address not found.' })
   @ApiResponse({ status: 400, description: 'Some products are out of stock.' })
   @Post(':userId/checkout')
-  @ApiQuery({ name: 'voucherName', type: String, required: false, description: 'Optional voucher name to apply a discount' })
+  @ApiQuery({
+    name: 'voucherName',
+    type: String,
+    required: false,
+    description: 'Optional voucher name to apply a discount',
+  })
   async checkOut(
     @Param('userId') userId: string,
     @Query('addressIndex') addressIndex: number,
-    @Query('voucherName') voucherName?: string
+    @Query('voucherName') voucherName?: string,
   ) {
-    return this.userService.checkOut(userId, addressIndex, voucherName );
+    return this.userService.checkOut(userId, addressIndex, voucherName);
   }
 
-  @ApiOperation({ summary: 'Get all products in the user\'s cart' })
+  @ApiOperation({ summary: "Get all products in the user's cart" })
   @ApiResponse({ status: 200, description: 'List of products in the cart' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
@@ -108,5 +141,4 @@ export class UserController {
   async getCartProducts(@Param('userId') userId: string) {
     return this.userService.getCartProducts(userId);
   }
-
 }

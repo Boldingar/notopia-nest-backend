@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Address } from 'src/address/entities/address.entity';
 import { Order } from 'src/order/entities/order.entity';
 import { Product } from 'src/product/entities/product.entity';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 
 @Entity()
 export class User {
@@ -30,22 +31,21 @@ export class User {
     type: 'enum',
     enum: ['customer', 'admin'],
     nullable: true,
-    default: 'customer'
+    default: 'customer',
   })
-  flag: 'customer' | 'admin'; 
+  flag: 'customer' | 'admin';
 
-  @ManyToMany(() => Product)
-  @JoinTable()
-  cart: Product[];
-
+  @OneToMany(() => CartItem, (cartItem) => cartItem.user, { cascade: true })
+  cart: CartItem[];
+  
   @ManyToMany(() => Product)
   @JoinTable()
   wishlist: Product[];
 
-  @OneToMany(() => Address, address => address.User)
-  addresses: Address[]; 
+  @OneToMany(() => Address, (address) => address.User)
+  addresses: Address[];
 
-  @OneToMany(() => Order, order => order.user)
+  @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
 
   @CreateDateColumn()

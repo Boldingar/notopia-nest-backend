@@ -11,9 +11,25 @@ import { ProductModule } from 'src/product/product.module';
 import { AddressModule } from 'src/address/address.module';
 import { Voucher } from 'src/voucher/entities/voucher.entity';
 import { VoucherModule } from 'src/voucher/voucher.module';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
+import { CartItemModule } from 'src/cart-item/cart-item.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Product, Order, Address, Voucher]), forwardRef(() => AddressModule), forwardRef(() =>OrderModule), ProductModule, VoucherModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      User,
+      Product,
+      Order,
+      Address,
+      Voucher,
+      CartItem,
+    ]),
+    forwardRef(() => AddressModule),
+    forwardRef(() => OrderModule),
+    ProductModule,
+    VoucherModule,
+    CartItemModule,
+  ],
   controllers: [UserController],
   providers: [UserService],
 })

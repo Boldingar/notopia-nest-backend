@@ -27,6 +27,8 @@ import { BrandModule } from './brand/brand.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { Brand } from './brand/entities/brand.entity';
+import { CartItemModule } from './cart-item/cart-item.module';
+import { CartItem } from './cart-item/entities/cart-item.entity';
 
 @Module({
   imports: [
@@ -61,6 +63,7 @@ import { Brand } from './brand/entities/brand.entity';
           Category,
           Delivery,
           Brand,
+          CartItem
         ],
         synchronize: true,
       }),
@@ -75,6 +78,7 @@ import { Brand } from './brand/entities/brand.entity';
     CategoryModule,
     BrandModule,
     DeliveryModule,
+    CartItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],
