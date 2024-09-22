@@ -1,8 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
+import { User } from './entities/user.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -58,23 +75,22 @@ export class UserController {
   async findAll() {
     return this.userService.findAll();
   }
-
-  @ApiOperation({ summary: 'Get a user by phone' })
-  @ApiResponse({ status: 200, description: 'User found' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiParam({ name: 'phone', type: String, description: 'phone of the user' })
-  @Get(':phone')
-  async findOneByPhone(@Param('phone') phone: string) {
-    return this.userService.findOneByPhone(phone);
-  }
-
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'User found' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  async findUserById(@Param('id') id: string): Promise<User> {
+    const user = await this.userService.findUserById(id);
+    return user;
+  }
+  @ApiOperation({ summary: 'Get a user by phone' })
+  @ApiResponse({ status: 200, description: 'User found' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiParam({ name: 'phone', type: String, description: 'phone of the user' })
+  @Get('phone/:phone')
+  async findUserByPhone(@Param('phone') phone: string) {
+    return this.userService.findUserByPhone(phone);
   }
 
   @ApiOperation({ summary: 'Update a user' })
@@ -98,20 +114,16 @@ export class UserController {
   async remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
-
-  @ApiOperation({ summary: "Add a product to the user's cart" })
+  @ApiOperation({ summary: "Empty the user's cart" })
   @ApiResponse({
     status: 200,
-    description: 'The product has been added to the cart.',
+    description: 'The cart bocome empty.',
   })
-  @ApiResponse({ status: 404, description: 'User or product not found.' })
-  @ApiResponse({ status: 400, description: 'Invalid product or user.' })
-  @Post(':userId/cart/:productId')
-  async addToCart(
-    @Param('userId') userId: string,
-    @Param('productId') productId: string,
-  ) {
-    return this.userService.addToCart(userId, productId);
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiResponse({ status: 400, description: 'Invalid  user.' })
+  @Post(':userId/emptyCart')
+  async emptyUserCart(@Param('userId') userId: string) {
+    return this.userService.emptyCart(userId);
   }
 
   @ApiOperation({ summary: "Check out the user's cart" })
@@ -140,5 +152,20 @@ export class UserController {
   @Get(':userId/cart')
   async getCartProducts(@Param('userId') userId: string) {
     return this.userService.getCartProducts(userId);
+  }
+
+  @ApiOperation({ summary: "Add a product to the user's cart" })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been added to the cart.',
+  })
+  @ApiResponse({ status: 404, description: 'User or product not found.' })
+  @ApiResponse({ status: 400, description: 'Invalid product or user.' })
+  @Post(':userId/cart/:productId')
+  async addToCart(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ) {
+    return this.userService.addToCart(userId, productId);
   }
 }

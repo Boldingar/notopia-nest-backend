@@ -45,19 +45,27 @@ export class UserService {
     });
   }
 
-  async findOneByPhone(phone: string): Promise<User> {
+  async findUserById(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['cart', 'wishlist', 'addresses', 'orders'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return user; // Return the user directly
+  }
+  
+  async findUserByPhone(phone: string): Promise<User> {
     return this.userRepository.findOne({
       where: { phone },
       relations: ['cart', 'wishlist', 'addresses', 'orders'],
     });
   }
 
-  async findOne(id: string): Promise<User> {
-    return this.userRepository.findOne({
-      where: { id },
-      relations: ['cart', 'wishlist', 'addresses', 'orders'],
-    });
-  }
+
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.preload({
@@ -78,6 +86,25 @@ export class UserService {
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+  }
+  async emptyCart(userId: string): Promise<{ message: string; user: User }> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['cart'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    user.cart = [];
+
+    await this.userRepository.save(user);
+
+    return {
+      message: 'the cart items has been deleted successfully',
+      user: user,
+    };
   }
 
   async addToCart(
@@ -102,12 +129,16 @@ export class UserService {
       throw new BadRequestException('Product is out of stock');
     }
 
-    let cartItem = user.cart.find((item) => item.product.id === productId);
+    console.log(user);
+    console.log(product);
+
+    let cartItem = user.cart.find((item) => item?.product?.id === productId);
     if (cartItem) {
       cartItem.counter += 1;
     } else {
       cartItem = new CartItem();
       cartItem.counter = 1;
+      cartItem.product = product;
       user.cart.push(cartItem);
     }
 
@@ -115,7 +146,8 @@ export class UserService {
     await this.userRepository.save(user);
 
     const totalPrice = user.cart.reduce((sum, item) => {
-      const discount = item.product.discountPercentage || 0;
+      if (!item.product) return sum; // Skip if product is null
+      const discount = Number(item.product.discountPercentage) || 0;
       const effectivePrice =
         discount > 0
           ? item.product.price - item.product.price * (discount / 100)
@@ -126,39 +158,6 @@ export class UserService {
 
     return { cart: user.cart, totalPrice };
   }
-  
-  // async addToCart(userId: string, productId: string): Promise<CartItem[]> {
-  // const user = await this.userRepository.findOne({
-  //     where: { id: userId },
-  //     relations: ['cart', 'cart.product'],
-  //   });
-  //   const product = await this.productRepository.findOneBy({ id: productId });
-
-  //   if (!product) {
-  //     throw new NotFoundException('Product not found');
-  //   }
-
-  //   // Check if the product is already in the cart
-  //   const existingCartItem = user.cart.find(
-  //     (item) => item.product.id === productId,
-  //   );
-
-  //   if (existingCartItem) {
-  //     // If the item exists, increment the quantity by 1
-  //     existingCartItem.counter += 1;
-  //   } else {
-  //     // If it doesn't exist, create a new CartItem with a counter of 1
-  //     const newCartItem = new CartItem();
-  //     newCartItem.user = user;
-  //     newCartItem.product = product;
-  //     newCartItem.counter = 1; // Set initial counter to 1
-
-  //     user.cart.push(newCartItem);
-  //   }
-
-  //   await this.userRepository.save(user);
-  //   return user.cart;
-  // }
 
   async checkOut(
     userId: string,

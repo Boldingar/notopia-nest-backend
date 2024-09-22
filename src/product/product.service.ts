@@ -37,98 +37,123 @@ export class ProductService {
         linkedProducts,
         ...productData
       } = createProductDto;
+      let categories;
+      let linkedProductEntities;
+      let tags;
+      let brand;
       ////////////TAGS/////////////////
-      let parsedTagsIds: string[] = [];
-      let tempTagId = '';
-      for (let i = 0; i < tagsId.length; i++) {
-        if (tagsId[i] === ',') {
-          parsedTagsIds.push(tempTagId.trim());
-          tempTagId = '';
-        } else {
-          tempTagId += tagsId[i];
+      if (tagsId) {
+        let parsedTagsIds: string[] = [];
+        let tempTagId = '';
+        for (let i = 0; i < tagsId.length; i++) {
+          if (tagsId[i] === ',') {
+            parsedTagsIds.push(tempTagId.trim());
+            tempTagId = '';
+          } else {
+            tempTagId += tagsId[i];
+          }
         }
-      }
-      if (tempTagId) {
-        parsedTagsIds.push(tempTagId.trim());
-      }
+        if (tempTagId) {
+          parsedTagsIds.push(tempTagId.trim());
+        }
 
-      if (!Array.isArray(parsedTagsIds)) {
-        throw new BadRequestException('tagsId must be an array');
-      }
+        if (!Array.isArray(parsedTagsIds)) {
+          throw new BadRequestException('tagsId must be an array');
+        }
 
-      const tags = await this.tagRepository.find({
-        where: { id: In(parsedTagsIds) },
-      });
+        tags = await this.tagRepository.find({
+          where: { id: In(parsedTagsIds) },
+        });
 
-      if (parsedTagsIds.length !== tags.length) {
-        throw new NotFoundException('One or more tags not found');
+        if (parsedTagsIds.length !== tags.length) {
+          throw new NotFoundException('One or more tags not found');
+        }
       }
       /////////////////CATEGORY////////////////////
-      let parsedCategoryIds: string[] = [];
-      let tempId = '';
-      for (let i = 0; i < categoryIds.length; i++) {
-        if (categoryIds[i] === ',') {
-          parsedCategoryIds.push(tempId.trim());
-          tempId = '';
-        } else {
-          tempId += categoryIds[i];
+      if (categoryIds) {
+        let parsedCategoryIds: string[] = [];
+        let tempId = '';
+        for (let i = 0; i < categoryIds.length; i++) {
+          if (categoryIds[i] === ',') {
+            parsedCategoryIds.push(tempId.trim());
+            tempId = '';
+          } else {
+            tempId += categoryIds[i];
+          }
         }
-      }
-      if (tempId) {
-        parsedCategoryIds.push(tempId.trim());
-      }
+        if (tempId) {
+          parsedCategoryIds.push(tempId.trim());
+        }
 
-      if (!Array.isArray(parsedCategoryIds)) {
-        throw new BadRequestException('categoryIds must be an array');
-      }
+        if (!Array.isArray(parsedCategoryIds)) {
+          throw new BadRequestException('categoryIds must be an array');
+        }
 
-      const categories = await this.categoryRepository.find({
-        where: { id: In(parsedCategoryIds) },
-      });
+        categories = await this.categoryRepository.find({
+          where: { id: In(parsedCategoryIds) },
+        });
 
-      if (parsedCategoryIds.length !== categories.length) {
-        throw new NotFoundException('One or more categories not found');
+        if (parsedCategoryIds.length !== categories.length) {
+          throw new NotFoundException('One or more categories not found');
+        }
       }
       /////////////////LINKEDPRODUCTS/////////////
-      let parsedLinkedProductEntities: string[] = [];
-      let tempId2 = '';
-      for (let i = 0; i < linkedProducts.length; i++) {
-        if (linkedProducts[i] === ',') {
+      if (linkedProducts) {
+        let parsedLinkedProductEntities: string[] = [];
+        let tempId2 = '';
+        for (let i = 0; i < linkedProducts.length; i++) {
+          if (linkedProducts[i] === ',') {
+            parsedLinkedProductEntities.push(tempId2.trim());
+            tempId2 = '';
+          } else {
+            tempId2 += linkedProducts[i];
+          }
+        }
+        if (tempId2) {
           parsedLinkedProductEntities.push(tempId2.trim());
-          tempId2 = '';
-        } else {
-          tempId2 += linkedProducts[i];
+        }
+        if (!Array.isArray(parsedLinkedProductEntities)) {
+          throw new BadRequestException('linkedProducts must be an array');
+        }
+
+        linkedProductEntities = linkedProducts
+          ? await this.productRepository.find({
+              where: { id: In(parsedLinkedProductEntities) },
+            })
+          : [];
+        if (
+          parsedLinkedProductEntities.length !== linkedProductEntities.length
+        ) {
+          throw new NotFoundException('One or more categories not found');
         }
       }
-      if (tempId2) {
-        parsedLinkedProductEntities.push(tempId2.trim());
+      if (brandId) {
+        brand = brandId
+          ? await this.brandRepository.findOne({ where: { id: brandId } })
+          : null;
+        if (brandId && !brand) {
+          throw new NotFoundException('Brand not found');
+        }
       }
-      if (!Array.isArray(parsedLinkedProductEntities)) {
-        throw new BadRequestException('linkedProducts must be an array');
+      var product;
+      if (images) {
+        product = this.productRepository.create({
+          ...productData,
+          categories,
+          brand,
+          images,
+          tags,
+          linkedProducts: linkedProductEntities,
+        });
+      } else {
+        product = this.productRepository.create({
+          ...productData,
+          categories,
+          brand,
+          tags,
+          linkedProducts: linkedProductEntities,
+        });
       }
-
-      const linkedProductEntities = linkedProducts
-        ? await this.productRepository.find({
-            where: { id: In(parsedLinkedProductEntities) },
-          })
-        : [];
-      if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
-        throw new NotFoundException('One or more categories not found');
-      }
-      const brand = brandId
-        ? await this.brandRepository.findOne({ where: { id: brandId } })
-        : null;
-      if (brandId && !brand) {
-        throw new NotFoundException('Brand not found');
-      }
-      const product = this.productRepository.create({
-        ...productData,
-        categories,
-        brand,
-        images,
-        tags,
-        linkedProducts: linkedProductEntities,
-      });
 
       return await this.productRepository.save(product);
     } catch (error) {
@@ -142,7 +167,7 @@ export class ProductService {
     limit: number,
   ): Promise<{ data: Product[]; total: number }> {
     const take = Math.max(1, limit);
-    const skip = Math.max(0, (page - 1) * take); 
+    const skip = Math.max(0, (page - 1) * take);
 
     const [result, total] = await this.productRepository.findAndCount({
       relations: ['categories', 'linkedProducts', 'brand'],

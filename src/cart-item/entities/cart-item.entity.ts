@@ -10,6 +10,9 @@ export class CartItem {
   @Column()
   counter: number;
 
+  // @Column()
+  // itemPrice: number;
+
   @ManyToOne(() => Product)
   product: Product;
 
