@@ -123,7 +123,6 @@ export class OrderService {
       order.user = user;
     }
 
-    // If new products are provided, update the order's products
     if (productIds) {
       const products = await this.productRepository.findBy({
         id: In(productIds),
