@@ -57,7 +57,7 @@ export class UserService {
 
     return user; // Return the user directly
   }
-  
+
   async findUserByPhone(phone: string): Promise<User> {
     return this.userRepository.findOne({
       where: { phone },
@@ -65,16 +65,17 @@ export class UserService {
     });
   }
 
-
-
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.userRepository.preload({
-      id,
-      ...updateUserDto,
-    });
+  async update(phone: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { phone } });
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`User with phone number ${phone} not found`);
+    }
+
+    for (const key in updateUserDto) {
+      if (updateUserDto[key] !== undefined) {
+        user[key] = updateUserDto[key];
+      }
     }
 
     return this.userRepository.save(user);

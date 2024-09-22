@@ -18,7 +18,7 @@ export class CreateUserDto {
   lastName: string;
 
   @ApiProperty({
-    example: '+1234567890',
+    example: '01003847394',
   })
   @IsString()
   @IsNotEmpty()
@@ -46,7 +46,7 @@ export class CreateUserDto {
   gender: string;
 
   @ApiProperty({
-    example: 'Customer',
+    example: 'customer',
   })
   @IsEnum(['customer', 'admin'])
   @IsOptional()

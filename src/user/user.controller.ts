@@ -99,11 +99,18 @@ export class UserController {
     description: 'The user has been successfully updated.',
   })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
-  @Patch(':id')
+  @ApiParam({
+    name: 'phone',
+    type: String,
+    description: 'Phone number of the user',
+  })
+  @Patch(':phone')
   @ApiBody({ type: UpdateUserDto })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
+  async update(
+    @Param('phone') phone: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.update(phone, updateUserDto);
   }
 
   @ApiOperation({ summary: 'Delete a user' })

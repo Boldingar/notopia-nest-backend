@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsDateString,IsEnum, IsOptional, IsArray } from 'class-validator';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import { Product } from 'src/product/entities/product.entity';
 
 export class UpdateUserDto {
@@ -20,7 +21,7 @@ export class UpdateUserDto {
   lastName?: string;
 
   @ApiProperty({
-    example: '+1234567890',
+    example: '01002927384',
     required: false,
   })
   @IsOptional()
@@ -52,7 +53,7 @@ export class UpdateUserDto {
   gender?: string;
 
   @ApiProperty({
-    example: 'Customer',
+    example: 'customer',
     required:false,
   })
   @IsEnum(['customer', 'admin'])
@@ -68,12 +69,12 @@ export class UpdateUserDto {
         stock: 10,
       },
     ],
-    type: [Product],
+    type: [CartItem],
     required: false,
   })
   @IsOptional()
   @IsArray()
-  cart?: Product[];
+  cart?: CartItem[];
 
   @ApiProperty({
     example: [
