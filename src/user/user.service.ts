@@ -13,6 +13,8 @@ import { Order } from '../order/entities/order.entity';
 import { Address } from '../address/entities/address.entity';
 import { Voucher } from 'src/voucher/entities/voucher.entity';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
+import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class UserService {
@@ -30,12 +32,18 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { cart = [], wishlist = [] } = createUserDto;
+    const { cart = [], wishlist = [], password } = createUserDto;
+
+    const saltRounds = 10; 
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     const user = this.userRepository.create({
       ...createUserDto,
+      password: hashedPassword,
       cart,
       wishlist,
     });
+
     return this.userRepository.save(user);
   }
 
