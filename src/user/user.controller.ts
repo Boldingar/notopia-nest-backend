@@ -20,6 +20,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -174,5 +175,26 @@ export class UserController {
     @Param('productId') productId: string,
   ) {
     return this.userService.addToCart(userId, productId);
+  }
+
+  @ApiOperation({ summary: 'Remove an item from the cart' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product has been removed from the cart successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'User or product not found.' })
+  @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
+  @ApiParam({
+    name: 'productId',
+    type: String,
+    description: 'ID of the product to remove from the cart',
+  })
+  @Delete(':userId/remove/:productId')
+  async removeFromCart(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ): Promise<{ message: string; cart: CartItem[]; totalPrice: number }> {
+    const result = await this.userService.removeFromCart(userId, productId);
+    return result;
   }
 }

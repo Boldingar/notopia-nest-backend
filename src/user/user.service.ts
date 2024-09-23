@@ -34,7 +34,7 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { cart = [], wishlist = [], password } = createUserDto;
 
-    const saltRounds = 10; 
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const user = this.userRepository.create({
@@ -166,6 +166,51 @@ export class UserService {
     }, 0);
 
     return { cart: user.cart, totalPrice };
+  }
+  
+  async removeFromCart(
+    userId: string,
+    productId: string,
+  ): Promise<{ message: string; cart: CartItem[]; totalPrice: number }> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['cart', 'cart.product'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const cartItemIndex = user.cart.findIndex(
+      (item) => item.product.id === productId,
+    );
+
+    if (cartItemIndex === -1) {
+      throw new NotFoundException(
+        `Product with ID ${productId} not found in the cart`,
+      );
+    }
+
+    user.cart.splice(cartItemIndex, 1);
+
+    await this.userRepository.save(user);
+
+    const totalPrice = user.cart.reduce((sum, item) => {
+      if (!item.product) return sum;
+      const discount = Number(item.product.discountPercentage) || 0;
+      const effectivePrice =
+        discount > 0
+          ? item.product.price - item.product.price * (discount / 100)
+          : item.product.price;
+
+      return sum + effectivePrice * item.counter;
+    }, 0);
+
+    return {
+      message: `Product with ID ${productId} has been removed from the cart successfully`,
+      cart: user.cart,
+      totalPrice,
+    };
   }
 
   async checkOut(
