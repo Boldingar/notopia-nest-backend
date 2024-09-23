@@ -295,7 +295,6 @@ export class ProductService {
     if (parsedLinkedProductEntities.length !== linkedProductEntities.length) {
       throw new NotFoundException('One or more linked products not found');
     }
-    console.log('abllllllll el await');
     const product = await this.productRepository.preload({
       id,
       ...updateData,
@@ -303,7 +302,6 @@ export class ProductService {
       brand,
       linkedProducts: linkedProductEntities,
     });
-    console.log('ba3ddd el await');
 
     let parsedCategoryIds: string[] = [];
     if (categoryIds) {
@@ -331,7 +329,6 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
-    console.log(product);
 
     return this.productRepository.save(product);
   }

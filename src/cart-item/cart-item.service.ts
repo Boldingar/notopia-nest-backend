@@ -36,7 +36,6 @@ export class CartItemService {
     let cartItem = user.cart.find((item) => item.product.id === productId);
 
     if (cartItem) {
-      // Mark the field to be updated explicitly
       cartItem.counter += 1;
     } else {
       cartItem = new CartItem();
@@ -46,7 +45,6 @@ export class CartItemService {
       user.cart.push(cartItem);
     }
 
-    // Save will either insert or update the entity
     await this.cartItemRepository.save(cartItem);
     await this.userRepository.save(user);
 

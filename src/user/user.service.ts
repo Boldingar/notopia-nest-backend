@@ -63,7 +63,7 @@ export class UserService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user; // Return the user directly
+    return user; 
   }
 
   async findUserByPhone(phone: string): Promise<User> {
@@ -138,9 +138,6 @@ export class UserService {
       throw new BadRequestException('Product is out of stock');
     }
 
-    console.log(user);
-    console.log(product);
-
     let cartItem = user.cart.find((item) => item?.product?.id === productId);
     if (cartItem) {
       cartItem.counter += 1;
@@ -155,7 +152,7 @@ export class UserService {
     await this.userRepository.save(user);
 
     const totalPrice = user.cart.reduce((sum, item) => {
-      if (!item.product) return sum; // Skip if product is null
+      if (!item.product) return sum;
       const discount = Number(item.product.discountPercentage) || 0;
       const effectivePrice =
         discount > 0
