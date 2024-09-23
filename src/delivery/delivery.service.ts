@@ -89,14 +89,12 @@ export class DeliveryService {
       relations: ['user'],
     });
 
-    delivery.dateOfDelivered = new Date();
 
     order.status = 'Delivered';
-    order.deliveredAt = delivery.dateOfDelivered;
+    order.deliveredAt = new Date();
 
     delivery.currentOrder = null;
     delivery.dateOfAssignment = null;
-    delivery.dateOfDelivered = null;
 
     await this.orderRepository.save(order);
 

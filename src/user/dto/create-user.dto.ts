@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsDateString, IsNotEmpty,IsEnum, IsOptional, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
 import { Product } from 'src/product/entities/product.entity';
 
 export class CreateUserDto {
@@ -82,5 +89,5 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsArray()
-  wishlist?: Product[]; 
+  wishlist?: Product[];
 }

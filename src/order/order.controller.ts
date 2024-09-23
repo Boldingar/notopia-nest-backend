@@ -31,7 +31,7 @@ export class OrderController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
   @Post()
-  @ApiBody({ type: CreateOrderDto }) 
+  @ApiBody({ type: CreateOrderDto })
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
@@ -48,6 +48,13 @@ export class OrderController {
   @Get('delivered')
   findDelivered() {
     return this.orderService.findDelivered();
+  }
+
+  @ApiOperation({ summary: 'Get all pending orders' })
+  @ApiResponse({ status: 200, description: 'List of all pending orders' })
+  @Get('pending')
+  findPending() {
+    return this.orderService.findPending();
   }
 
   @ApiOperation({ summary: 'Get an order by ID' })

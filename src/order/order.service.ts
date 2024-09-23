@@ -29,7 +29,7 @@ export class OrderService {
 
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['orders'], 
+      relations: ['orders'],
     });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
@@ -63,6 +63,13 @@ export class OrderService {
   async findDelivered(): Promise<Order[]> {
     return this.orderRepository.find({
       where: { status: 'Delivered' },
+      relations: ['user', 'products'],
+    });
+  }
+
+  async findPending(): Promise<Order[]> {
+    return this.orderRepository.find({
+      where: { status: 'Pending' },
       relations: ['user', 'products'],
     });
   }
