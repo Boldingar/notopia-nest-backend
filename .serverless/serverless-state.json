@@ -8,11 +8,11 @@
       "name": "aws",
       "runtime": "nodejs18.x",
       "environment": {
-        "DATABASE_HOST": "notopia-main-db.craw64mkg3cv.eu-central-1.rds.amazonaws.com",
+        "DATABASE_HOST": "notopia-main-db-1.craw64mkg3cv.eu-central-1.rds.amazonaws.com",
         "DATABASE_PORT": "5432",
         "DATABASE_USERNAME": "postgres",
         "DATABASE_PASSWORD": "Notopia2030",
-        "DATABASE_NAME": "notopia-main-db"
+        "DATABASE_NAME": "notopia_main_db"
       },
       "region": "eu-central-1",
       "stage": "prod",
@@ -110,7 +110,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-eu-central-1-69002036-41cf",
-                "S3Key": "serverless/notopia-backend/prod/1727109331011-2024-09-23T16:35:31.011Z/notopia-backend.zip"
+                "S3Key": "serverless/notopia-backend/prod/1727123723931-2024-09-23T20:35:23.931Z/notopia-backend.zip"
               },
               "Handler": "dist/serverless.handler",
               "Runtime": "nodejs18.x",
@@ -119,11 +119,11 @@
               "Timeout": 10,
               "Environment": {
                 "Variables": {
-                  "DATABASE_HOST": "notopia-main-db.craw64mkg3cv.eu-central-1.rds.amazonaws.com",
+                  "DATABASE_HOST": "notopia-main-db-1.craw64mkg3cv.eu-central-1.rds.amazonaws.com",
                   "DATABASE_PORT": "5432",
                   "DATABASE_USERNAME": "postgres",
                   "DATABASE_PASSWORD": "Notopia2030",
-                  "DATABASE_NAME": "notopia-main-db"
+                  "DATABASE_NAME": "notopia_main_db"
                 }
               },
               "Role": {
@@ -137,14 +137,14 @@
               "MainLogGroup"
             ]
           },
-          "MainLambdaVersionF6wayHPrEttqpHzmnTAcnijw6p8A1jspSVooFkyq8vY": {
+          "MainLambdaVersionXHD9KNLKXyHzcI33JdmychFHO3gI5dCLM4ztxk": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "MainLambdaFunction"
               },
-              "CodeSha256": "iTvmwdPIVIaGhlxLufhxDP7q+IN67FVtk6bRkqm4LYo="
+              "CodeSha256": "Bnu/T1XFSEVnvvK1lKV33go5aRXRuTayEQwDRoJlC1w="
             }
           },
           "ApiGatewayRestApi": {
@@ -169,6 +169,54 @@
                 ]
               },
               "PathPart": "{proxy+}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,GET,HEAD,PATCH,POST,PUT'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -269,7 +317,7 @@
               "MainLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1727109326363": {
+          "ApiGatewayDeployment1727123718458": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -278,6 +326,7 @@
               "StageName": "prod"
             },
             "DependsOn": [
+              "ApiGatewayMethodOptions",
               "ApiGatewayMethodAny",
               "ApiGatewayMethodProxyVarAny"
             ]
@@ -330,7 +379,7 @@
           "MainLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "MainLambdaVersionF6wayHPrEttqpHzmnTAcnijw6p8A1jspSVooFkyq8vY"
+              "Ref": "MainLambdaVersionXHD9KNLKXyHzcI33JdmychFHO3gI5dCLM4ztxk"
             },
             "Export": {
               "Name": "sls-notopia-backend-prod-MainLambdaFunctionQualifiedArn"
@@ -378,6 +427,21 @@
             "http": {
               "method": "any",
               "path": "",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "ANY"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "Authorization",
+                  "X-Amz-Date",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token"
+                ],
+                "allowCredentials": false
+              },
               "integration": "AWS_PROXY"
             }
           },
@@ -395,7 +459,7 @@
         "memory": 1024,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "MainLambdaVersionF6wayHPrEttqpHzmnTAcnijw6p8A1jspSVooFkyq8vY"
+        "versionLogicalId": "MainLambdaVersionXHD9KNLKXyHzcI33JdmychFHO3gI5dCLM4ztxk"
       }
     },
     "configValidationMode": "warn",
@@ -420,7 +484,7 @@
         "artifactsS3KeyDirname": "serverless/notopia-backend/prod/code-artifacts",
         "deploymentBucket": "serverless-framework-deployments-eu-central-1-69002036-41cf",
         "artifact": "E:\\Notopia_Backend\\notopia_NEST\\.serverless\\notopia-backend.zip",
-        "artifactDirectoryName": "serverless/notopia-backend/prod/1727109331011-2024-09-23T16:35:31.011Z"
+        "artifactDirectoryName": "serverless/notopia-backend/prod/1727123723931-2024-09-23T20:35:23.931Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -433,7 +497,7 @@
     "artifact": "E:\\Notopia_Backend\\notopia_NEST\\.serverless\\notopia-backend.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/notopia-backend/prod/1727109331011-2024-09-23T16:35:31.011Z",
+    "artifactDirectoryName": "serverless/notopia-backend/prod/1727123723931-2024-09-23T20:35:23.931Z",
     "artifact": "notopia-backend.zip"
   }
 }
