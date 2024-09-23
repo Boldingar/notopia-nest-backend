@@ -1,10 +1,14 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
-import { User } from 'src/user/entities/user.entity'; 
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AddressService {
@@ -29,7 +33,6 @@ export class AddressService {
 
     const address = this.addressRepository.create({
       ...addressData,
-      User: user,
     });
 
     const savedAddress = await this.addressRepository.save(address);
@@ -42,7 +45,7 @@ export class AddressService {
   }
 
   async findAll(): Promise<Address[]> {
-    return this.addressRepository.find({ relations: ['User'] });
+    return this.addressRepository.find();
   }
 
   async findOne(id: string): Promise<Address> {
@@ -58,7 +61,10 @@ export class AddressService {
     return address;
   }
 
-  async update(id: string, updateAddressDto: UpdateAddressDto): Promise<Address> {
+  async update(
+    id: string,
+    updateAddressDto: UpdateAddressDto,
+  ): Promise<Address> {
     const address = await this.addressRepository.preload({
       id,
       ...updateAddressDto,
@@ -69,10 +75,14 @@ export class AddressService {
     }
 
     if (updateAddressDto.userId) {
-      const user = await this.userRepository.findOneBy({ id: updateAddressDto.userId });
+      const user = await this.userRepository.findOneBy({
+        id: updateAddressDto.userId,
+      });
 
       if (!user) {
-        throw new NotFoundException(`User with ID ${updateAddressDto.userId} not found`);
+        throw new NotFoundException(
+          `User with ID ${updateAddressDto.userId} not found`,
+        );
       }
 
       address.User = user;
@@ -91,20 +101,21 @@ export class AddressService {
 
   async findAddressesByUserId(userId: string): Promise<Address[]> {
     try {
-      const user = await this.userRepository.findOne({where: {id:userId}})
-      if(!user){
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
         throw new NotFoundException('User with ID ${userId} isnot found');
       }
 
-      const addresses = await this.addressRepository.find({where: { User: { id: userId } }, relations: ['User'] });
-      
-      if(!addresses.length){
+      const addresses = await this.addressRepository.find({
+        where: { User: { id: userId } },
+      });
+
+      if (!addresses.length) {
         throw new NotFoundException('No addresses are found for this user');
       }
 
       return addresses;
-    } 
-    catch (error) {
+    } catch (error) {
       throw new InternalServerErrorException('Failed to find addresses');
     }
   }
