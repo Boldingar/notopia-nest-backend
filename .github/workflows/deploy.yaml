@@ -1,0 +1,36 @@
+
+name: CI/CD to AWS EC2
+
+on:
+  push:
+    branches:
+      - main  # Run this workflow when pushing to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 5: Copy the SSH key for EC2 access
+      - name: Add SSH Key
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
+
+      # Step 6: Deploy to AWS EC2
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
+            cd ${{ secrets.AWS_PATH }}
+            git pull origin main
+            npm install
+            pm2 restart all  # Assuming you're using PM2 to manage your Node.js app
+          EOF
