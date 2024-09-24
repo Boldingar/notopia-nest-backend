@@ -24,18 +24,6 @@ import {
 export class CartItemController {
   constructor(private readonly cartItemService: CartItemService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create a new cart item' })
-  @ApiResponse({
-    status: 201,
-    description: 'The cart item has been successfully created.',
-  })
-  @ApiResponse({ status: 400, description: 'Bad Request.' })
-  @ApiBody({ type: CreateCartItemDto })
-  create(@Body() createCartItemDto: CreateCartItemDto) {
-    return this.cartItemService.create(createCartItemDto);
-  }
-
   @Get()
   @ApiOperation({ summary: 'Get all cart items' })
   @ApiResponse({ status: 200, description: 'Return all cart items.' })
@@ -52,21 +40,6 @@ export class CartItemController {
     return this.cartItemService.findOne(id);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update a cart item by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'The cart item has been successfully updated.',
-  })
-  @ApiResponse({ status: 404, description: 'Cart item not found.' })
-  @ApiParam({ name: 'id', required: true, description: 'ID of the cart item' })
-  @ApiBody({ type: UpdateCartItemDto })
-  update(
-    @Param('id') id: string,
-    @Body() updateCartItemDto: UpdateCartItemDto,
-  ) {
-    return this.cartItemService.update(id, updateCartItemDto);
-  }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a cart item by ID' })
