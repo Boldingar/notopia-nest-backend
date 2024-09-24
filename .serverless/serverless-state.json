@@ -110,13 +110,13 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-eu-central-1-69002036-41cf",
-                "S3Key": "serverless/notopia-backend/prod/1727123723931-2024-09-23T20:35:23.931Z/notopia-backend.zip"
+                "S3Key": "serverless/notopia-backend/prod/1727189917798-2024-09-24T14:58:37.798Z/notopia-backend.zip"
               },
               "Handler": "dist/serverless.handler",
               "Runtime": "nodejs18.x",
               "FunctionName": "notopia-backend-prod-main",
               "MemorySize": 1024,
-              "Timeout": 10,
+              "Timeout": 50,
               "Environment": {
                 "Variables": {
                   "DATABASE_HOST": "notopia-main-db-1.craw64mkg3cv.eu-central-1.rds.amazonaws.com",
@@ -137,14 +137,14 @@
               "MainLogGroup"
             ]
           },
-          "MainLambdaVersionXHD9KNLKXyHzcI33JdmychFHO3gI5dCLM4ztxk": {
+          "MainLambdaVersionJqYlrEL1SCTi7QILDJClVbcC0JaNY2rWAB6eL9b2e78": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "MainLambdaFunction"
               },
-              "CodeSha256": "Bnu/T1XFSEVnvvK1lKV33go5aRXRuTayEQwDRoJlC1w="
+              "CodeSha256": "+Y1PCZ8C+lv1sLLNJJKsMMWWcoc4OomAOwPQ5PPJGTI="
             }
           },
           "ApiGatewayRestApi": {
@@ -317,7 +317,7 @@
               "MainLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1727123718458": {
+          "ApiGatewayDeployment1727189710730": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -379,7 +379,7 @@
           "MainLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "MainLambdaVersionXHD9KNLKXyHzcI33JdmychFHO3gI5dCLM4ztxk"
+              "Ref": "MainLambdaVersionJqYlrEL1SCTi7QILDJClVbcC0JaNY2rWAB6eL9b2e78"
             },
             "Export": {
               "Name": "sls-notopia-backend-prod-MainLambdaFunctionQualifiedArn"
@@ -453,13 +453,13 @@
             }
           }
         ],
-        "timeout": 10,
+        "timeout": 50,
         "name": "notopia-backend-prod-main",
         "package": {},
         "memory": 1024,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "MainLambdaVersionXHD9KNLKXyHzcI33JdmychFHO3gI5dCLM4ztxk"
+        "versionLogicalId": "MainLambdaVersionJqYlrEL1SCTi7QILDJClVbcC0JaNY2rWAB6eL9b2e78"
       }
     },
     "configValidationMode": "warn",
@@ -477,14 +477,13 @@
       "package": {
         "exclude": [
           "images/**",
-          "node_modules/**",
           ".git/**",
           ".env"
         ],
         "artifactsS3KeyDirname": "serverless/notopia-backend/prod/code-artifacts",
         "deploymentBucket": "serverless-framework-deployments-eu-central-1-69002036-41cf",
         "artifact": "E:\\Notopia_Backend\\notopia_NEST\\.serverless\\notopia-backend.zip",
-        "artifactDirectoryName": "serverless/notopia-backend/prod/1727123723931-2024-09-23T20:35:23.931Z"
+        "artifactDirectoryName": "serverless/notopia-backend/prod/1727189917798-2024-09-24T14:58:37.798Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -497,7 +496,7 @@
     "artifact": "E:\\Notopia_Backend\\notopia_NEST\\.serverless\\notopia-backend.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/notopia-backend/prod/1727123723931-2024-09-23T20:35:23.931Z",
+    "artifactDirectoryName": "serverless/notopia-backend/prod/1727189917798-2024-09-24T14:58:37.798Z",
     "artifact": "notopia-backend.zip"
   }
 }

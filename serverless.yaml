@@ -21,7 +21,6 @@ provider:
 package:
   exclude:
     - images/**
-    - node_modules/**
     - .git/**
     - .env
 
@@ -43,4 +42,4 @@ functions:
       - http:
           method: ANY
           path: '{proxy+}'
-    timeout: 10
+    timeout: 50
