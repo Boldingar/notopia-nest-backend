@@ -332,4 +332,45 @@ export class UserService {
 
     return { orderedUsersCount, totalCustomersCount };
   }
+
+  async getAllVouchers(userId: string): Promise<Voucher[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['vouchers'],
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user.vouchers;
+  }
+
+  async addVoucher(userId: string, voucherId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['vouchers'],
+    });
+    const voucher = await this.voucherRepository.findOne({
+      where: { id: voucherId },
+    });
+    if (!user || !voucher) {
+      throw new Error('User or Voucher not found');
+    }
+
+    user.vouchers.push(voucher);
+    return this.userRepository.save(user);
+  }
+
+  async removeVoucher(userId: string, voucherId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['vouchers'],
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    user.vouchers = user.vouchers.filter((voucher) => voucher.id !== voucherId);
+    return this.userRepository.save(user);
+  }
 }

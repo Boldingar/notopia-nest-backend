@@ -58,7 +58,7 @@ export class User {
   @JoinTable()
   wishlist: Product[];
 
-  @ManyToMany(() => Product)
+  @ManyToMany(() => Voucher, { nullable: true })
   @JoinTable()
   vouchers: Voucher[];
 

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany } from 'typeorm';
 
 @Entity()
 export class Voucher {
@@ -7,6 +8,9 @@ export class Voucher {
 
   @Column({ unique: true })
   name: string;
+
+  @ManyToMany(() => User, (user) => user.vouchers,{nullable: true })
+  users: User[];
 
   @Column({ type: 'decimal', nullable: true })
   discountPercentage?: number;
@@ -17,6 +21,6 @@ export class Voucher {
   @CreateDateColumn({ type: 'timestamp' })
   startDate: Date;
 
-  @Column({ type: 'timestamp'})
+  @Column({ type: 'timestamp' })
   endDate: Date;
 }

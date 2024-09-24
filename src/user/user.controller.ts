@@ -21,6 +21,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
+import { Voucher } from 'src/voucher/entities/voucher.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -92,6 +93,35 @@ export class UserController {
   @Get('phone/:phone')
   async findUserByPhone(@Param('phone') phone: string) {
     return this.userService.findUserByPhone(phone);
+  }
+
+  @ApiOperation({ summary: 'Get all vouchers for a user' })
+  @ApiParam({ name: 'userId', type: String })
+  @Get(':userId/vouchers')
+  getAllVouchers(@Param('userId') userId: string): Promise<Voucher[]> {
+    return this.userService.getAllVouchers(userId);
+  }
+
+  @ApiOperation({ summary: 'Add a voucher to a user' })
+  @ApiParam({ name: 'userId', type: String })
+  @ApiParam({ name: 'voucherId', type: String })
+  @Post(':userId/vouchers/:voucherId')
+  addVoucher(
+    @Param('userId') userId: string,
+    @Param('voucherId') voucherId: string,
+  ): Promise<User> {
+    return this.userService.addVoucher(userId, voucherId);
+  }
+
+  @ApiOperation({ summary: 'Remove a voucher from a user' })
+  @ApiParam({ name: 'userId', type: String })
+  @ApiParam({ name: 'voucherId', type: String })
+  @Delete(':userId/vouchers/:voucherId')
+  removeVoucher(
+    @Param('userId') userId: string,
+    @Param('voucherId') voucherId: string,
+  ): Promise<User> {
+    return this.userService.removeVoucher(userId, voucherId);
   }
 
   @ApiOperation({ summary: 'Update a user' })
