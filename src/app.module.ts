@@ -29,11 +29,12 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { Brand } from './brand/entities/brand.entity';
 import { CartItemModule } from './cart-item/cart-item.module';
 import { CartItem } from './cart-item/entities/cart-item.entity';
+import { HealthController } from './healthCheck.controller'; 
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'src', 'images'), 
+      rootPath: join(process.cwd(), 'src', 'images'),
       serveRoot: '/images',
     }),
     ConfigModule.forRoot({
@@ -50,7 +51,7 @@ import { CartItem } from './cart-item/entities/cart-item.entity';
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
         ssl: {
-          rejectUnauthorized: false, 
+          rejectUnauthorized: false,
         },
         entities: [
           User,
@@ -63,7 +64,7 @@ import { CartItem } from './cart-item/entities/cart-item.entity';
           Category,
           Delivery,
           Brand,
-          CartItem
+          CartItem,
         ],
         synchronize: true,
       }),
@@ -80,7 +81,7 @@ import { CartItem } from './cart-item/entities/cart-item.entity';
     DeliveryModule,
     CartItemModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {}
