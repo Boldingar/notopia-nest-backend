@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { DeliveryService } from './delivery.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
@@ -35,18 +37,38 @@ export class DeliveryController {
   @ApiBody({ type: CreateDeliveryDto })
   @Post()
   async create(@Body() createDeliveryDto: CreateDeliveryDto) {
-    return this.deliveryService.create(createDeliveryDto);
+    try {
+      return await this.deliveryService.create(createDeliveryDto);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to create delivery',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
- @ApiOperation({ summary: 'Get orders by status' })
-  @ApiParam({ name: 'status', enum: ['ordered', 'in progress', 'picked up', 'delivered'], required: true })
+  @ApiOperation({ summary: 'Get orders by status' })
+  @ApiParam({
+    name: 'status',
+    enum: ['ordered', 'in progress', 'picked up', 'delivered'],
+    required: true,
+  })
   @ApiResponse({ status: 200, description: 'List of orders by status' })
-  @ApiResponse({ status: 404, description: 'No orders found for the given status' })
+  @ApiResponse({
+    status: 404,
+    description: 'No orders found for the given status',
+  })
   @Get(':status')
   async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
-    return this.deliveryService.getOrdersByStatus(status);
+    try {
+      return await this.deliveryService.getOrdersByStatus(status);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get orders by status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-
 
   @ApiOperation({ summary: 'Get details of a specific delivery' })
   @ApiResponse({ status: 200, description: 'Delivery details' })
@@ -54,7 +76,18 @@ export class DeliveryController {
   @ApiParam({ name: 'id', type: String, description: 'ID of the delivery' })
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Delivery> {
-    return this.deliveryService.findOne(id);
+    try {
+      const delivery = await this.deliveryService.findOne(id);
+      if (!delivery) {
+        throw new HttpException('Delivery not found', HttpStatus.NOT_FOUND);
+      }
+      return delivery;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get delivery',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @ApiOperation({ summary: 'Get all deliveries' })
@@ -62,11 +95,18 @@ export class DeliveryController {
   @ApiResponse({ status: 404, description: 'No deliveries found' })
   @Get()
   async findAll(): Promise<Delivery[]> {
-    return this.deliveryService.findAll();
+    try {
+      return await this.deliveryService.findAll();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get deliveries',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  @ApiOperation({ summary: 'change status to an order' })
-  @ApiResponse({ status: 200, description: 'status changes successfully' })
+  @ApiOperation({ summary: 'Change status of an order' })
+  @ApiResponse({ status: 200, description: 'Status changed successfully' })
   @ApiResponse({ status: 404, description: 'Order or delivery not found' })
   @ApiParam({
     name: 'deliveryId',
@@ -75,11 +115,18 @@ export class DeliveryController {
   })
   @ApiParam({ name: 'orderId', type: String, description: 'ID of the order' })
   @Patch(':deliveryId/order/:orderId')
-  async changeOrderStatud(
+  async changeOrderStatus(
     @Param('deliveryId') deliveryId: string,
     @Param('orderId') orderId: string,
   ): Promise<Delivery> {
-    return this.deliveryService.changeOrderStatus(deliveryId, orderId);
+    try {
+      return await this.deliveryService.changeOrderStatus(deliveryId, orderId);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to change order status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @ApiOperation({ summary: 'Delete a delivery' })
@@ -92,6 +139,17 @@ export class DeliveryController {
   })
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.deliveryService.remove(+id);
+    try {
+      const result = await this.deliveryService.remove(+id);
+      if (!result) {
+        throw new HttpException('Delivery not found', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to delete delivery',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

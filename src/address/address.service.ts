@@ -20,82 +20,103 @@ export class AddressService {
   ) {}
 
   async create(createAddressDto: CreateAddressDto): Promise<Address> {
-    const { userId, ...addressData } = createAddressDto;
+    try {
+      const { userId, ...addressData } = createAddressDto;
 
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['addresses'],
-    });
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['addresses'],
+      });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+
+      const address = this.addressRepository.create({
+        ...addressData,
+      });
+
+      const savedAddress = await this.addressRepository.save(address);
+
+      user.addresses.push(savedAddress);
+
+      await this.userRepository.save(user);
+
+      return savedAddress;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to create address');
     }
-
-    const address = this.addressRepository.create({
-      ...addressData,
-    });
-
-    const savedAddress = await this.addressRepository.save(address);
-
-    user.addresses.push(savedAddress);
-
-    await this.userRepository.save(user);
-
-    return savedAddress;
   }
 
   async findAll(): Promise<Address[]> {
-    return this.addressRepository.find();
+    try {
+      return await this.addressRepository.find();
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get addresses');
+    }
   }
 
   async findOne(id: string): Promise<Address> {
-    const address = await this.addressRepository.findOne({
-      where: { id },
-      relations: ['User'],
-    });
+    try {
+      const address = await this.addressRepository.findOne({
+        where: { id },
+        relations: ['User'],
+      });
 
-    if (!address) {
-      throw new NotFoundException(`Address with ID ${id} not found`);
+      if (!address) {
+        throw new NotFoundException(`Address with ID ${id} not found`);
+      }
+
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get address');
     }
-
-    return address;
   }
 
   async update(
     id: string,
     updateAddressDto: UpdateAddressDto,
   ): Promise<Address> {
-    const address = await this.addressRepository.preload({
-      id,
-      ...updateAddressDto,
-    });
-
-    if (!address) {
-      throw new NotFoundException(`Address with ID ${id} not found`);
-    }
-
-    if (updateAddressDto.userId) {
-      const user = await this.userRepository.findOneBy({
-        id: updateAddressDto.userId,
+    try {
+      const address = await this.addressRepository.preload({
+        id,
+        ...updateAddressDto,
       });
 
-      if (!user) {
-        throw new NotFoundException(
-          `User with ID ${updateAddressDto.userId} not found`,
-        );
+      if (!address) {
+        throw new NotFoundException(`Address with ID ${id} not found`);
       }
 
-      address.User = user;
-    }
+      if (updateAddressDto.userId) {
+        const user = await this.userRepository.findOneBy({
+          id: updateAddressDto.userId,
+        });
 
-    return this.addressRepository.save(address);
+        if (!user) {
+          throw new NotFoundException(
+            `User with ID ${updateAddressDto.userId} not found`,
+          );
+        }
+
+        address.User = user;
+      }
+
+      return await this.addressRepository.save(address);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update address');
+    }
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.addressRepository.delete(id);
+  async remove(id: string) {
+    try {
+      const result = await this.addressRepository.delete(id);
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`Address with ID ${id} not found`);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Address with ID ${id} not found`);
+      }
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete address');
     }
   }
 
@@ -103,7 +124,7 @@ export class AddressService {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) {
-        throw new NotFoundException('User with ID ${userId} isnot found');
+        throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
       const addresses = await this.addressRepository.find({
@@ -111,7 +132,7 @@ export class AddressService {
       });
 
       if (!addresses.length) {
-        throw new NotFoundException('No addresses are found for this user');
+        throw new NotFoundException('No addresses found for this user');
       }
 
       return addresses;

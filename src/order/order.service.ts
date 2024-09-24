@@ -25,120 +25,160 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    const { userId, productIds, price, status } = createOrderDto;
+    try {
+      const { userId, productIds, price, status } = createOrderDto;
 
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['orders'],
-    });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
-    }
-
-    const products = await this.productRepository.findBy({
-      id: In(productIds),
-    });
-    if (products.length !== productIds.length) {
-      throw new NotFoundException('One or more products not found');
-    }
-
-    const order = this.orderRepository.create({
-      ...createOrderDto,
-    });
-
-    const savedOrder = await this.orderRepository.save(order);
-
-    user.orders = user.orders || [];
-
-    user.orders = [...user.orders, savedOrder];
-    await this.userRepository.save(user);
-
-    return savedOrder;
-  }
-
-  async findAll(): Promise<Order[]> {
-    return this.orderRepository.find({ relations: ['user', 'products'] });
-  }
-
-  async findDelivered(): Promise<Order[]> {
-    return this.orderRepository.find({
-      where: { status: 'Delivered' },
-      relations: ['user', 'products'],
-    });
-  }
-
-  async findPending(): Promise<Order[]> {
-    return this.orderRepository.find({
-      where: { status: 'Pending' },
-      relations: ['user', 'products'],
-    });
-  }
-
-  async findOne(id: string): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id },
-      relations: ['user', 'products'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
-
-    return order;
-  }
-
-  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
-    const { userId, productIds, price, status } = updateOrderDto;
-
-    const order = await this.orderRepository.preload({
-      id,
-      ...updateOrderDto,
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
-
-    if (userId) {
-      const user = await this.userRepository.findOneBy({ id: userId });
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['orders'],
+      });
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
-      if (order.user) {
-        const previousUser = await this.userRepository.findOneBy({
-          id: order.user.id,
-        });
-        if (previousUser) {
-          previousUser.orders = previousUser.orders.filter((o) => o.id !== id);
-          await this.userRepository.save(previousUser);
-        }
-      }
-
-      user.orders = [...user.orders, order];
-      await this.userRepository.save(user);
-
-      order.user = user;
-    }
-
-    if (productIds) {
       const products = await this.productRepository.findBy({
         id: In(productIds),
       });
       if (products.length !== productIds.length) {
         throw new NotFoundException('One or more products not found');
       }
-      order.products = products;
-    }
 
-    return this.orderRepository.save(order);
+      const order = this.orderRepository.create({
+        ...createOrderDto,
+      });
+
+      const savedOrder = await this.orderRepository.save(order);
+
+      user.orders = user.orders || [];
+
+      user.orders = [...user.orders, savedOrder];
+      await this.userRepository.save(user);
+
+      return savedOrder;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw new InternalServerErrorException('Failed to create order');
+    }
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.orderRepository.delete(id);
+  async findAll(): Promise<Order[]> {
+    try {
+      return await this.orderRepository.find({
+        relations: ['user', 'products'],
+      });
+    } catch (error) {
+      console.error('Error finding all orders:', error);
+      throw new InternalServerErrorException('Failed to find all orders');
+    }
+  }
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
+  async findDelivered(): Promise<Order[]> {
+    try {
+      return await this.orderRepository.find({
+        where: { status: 'Delivered' },
+        relations: ['user', 'products'],
+      });
+    } catch (error) {
+      console.error('Error finding delivered orders:', error);
+      throw new InternalServerErrorException('Failed to find delivered orders');
+    }
+  }
+
+  async findPending(): Promise<Order[]> {
+    try {
+      return await this.orderRepository.find({
+        where: { status: 'Pending' },
+        relations: ['user', 'products'],
+      });
+    } catch (error) {
+      console.error('Error finding pending orders:', error);
+      throw new InternalServerErrorException('Failed to find pending orders');
+    }
+  }
+
+  async findOne(id: string): Promise<Order> {
+    try {
+      const order = await this.orderRepository.findOne({
+        where: { id },
+        relations: ['user', 'products'],
+      });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+
+      return order;
+    } catch (error) {
+      console.error('Error finding order:', error);
+      throw new InternalServerErrorException('Failed to find order');
+    }
+  }
+
+  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+    try {
+      const { userId, productIds, price, status } = updateOrderDto;
+
+      const order = await this.orderRepository.preload({
+        id,
+        ...updateOrderDto,
+      });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+
+      if (userId) {
+        const user = await this.userRepository.findOneBy({ id: userId });
+        if (!user) {
+          throw new NotFoundException(`User with ID ${userId} not found`);
+        }
+
+        if (order.user) {
+          const previousUser = await this.userRepository.findOneBy({
+            id: order.user.id,
+          });
+          if (previousUser) {
+            previousUser.orders = previousUser.orders.filter(
+              (o) => o.id !== id,
+            );
+            await this.userRepository.save(previousUser);
+          }
+        }
+
+        user.orders = [...user.orders, order];
+        await this.userRepository.save(user);
+
+        order.user = user;
+      }
+
+      if (productIds) {
+        const products = await this.productRepository.findBy({
+          id: In(productIds),
+        });
+        if (products.length !== productIds.length) {
+          throw new NotFoundException('One or more products not found');
+        }
+        order.products = products;
+      }
+
+      return await this.orderRepository.save(order);
+    } catch (error) {
+      console.error('Error updating order:', error);
+      throw new InternalServerErrorException('Failed to update order');
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      const result = await this.orderRepository.delete(id);
+
+      if (result.affected === 0) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      throw new InternalServerErrorException('Failed to delete order');
     }
   }
 

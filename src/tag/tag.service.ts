@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Tag } from './entities/tag.entity';
@@ -24,7 +29,7 @@ export class TagService {
         products: [],
       });
 
-      return this.tagRepository.save(tag);
+      return await this.tagRepository.save(tag);
     } catch (error) {
       console.error('Error creating tag:', error);
       throw new BadRequestException('Failed to create tag');
@@ -32,78 +37,110 @@ export class TagService {
   }
 
   async findAll(): Promise<Tag[]> {
-    return this.tagRepository.find({ relations: ['products'] });
+    try {
+      return await this.tagRepository.find({ relations: ['products'] });
+    } catch (error) {
+      console.error('Error finding all tags:', error);
+      throw new InternalServerErrorException('Failed to find all tags');
+    }
   }
 
   async findOne(id: string): Promise<Tag> {
-    const tag = await this.tagRepository.findOne({
-      where: { id },
-      relations: ['products'],
-    });
+    try {
+      const tag = await this.tagRepository.findOne({
+        where: { id },
+        relations: ['products'],
+      });
 
-    if (!tag) {
-      throw new NotFoundException(`Tag with id ${id} not found`);
+      if (!tag) {
+        throw new NotFoundException(`Tag with id ${id} not found`);
+      }
+
+      return tag;
+    } catch (error) {
+      console.error('Error finding tag:', error);
+      throw new InternalServerErrorException('Failed to find tag');
     }
-
-    return tag;
   }
 
   async findProducts(id: string): Promise<any[]> {
-    const tag = await this.tagRepository.findOne({
-      where: { id },
-      relations: ['products'],
-    });
+    try {
+      const tag = await this.tagRepository.findOne({
+        where: { id },
+        relations: ['products'],
+      });
 
-    if (!tag) {
-      throw new NotFoundException(`Tag with ID ${id} not found`);
+      if (!tag) {
+        throw new NotFoundException(`Tag with ID ${id} not found`);
+      }
+
+      return tag.products;
+    } catch (error) {
+      console.error('Error finding products for tag:', error);
+      throw new InternalServerErrorException('Failed to find products for tag');
     }
-
-    return tag.products;
   }
 
   async update(id: string, updateTagDto: UpdateTagDto): Promise<Tag> {
-    const tag = await this.tagRepository.preload({
-      id,
-      ...updateTagDto,
-    });
+    try {
+      const tag = await this.tagRepository.preload({
+        id,
+        ...updateTagDto,
+      });
 
-    if (!tag) {
-      throw new NotFoundException(`Tag with id ${id} not found`);
+      if (!tag) {
+        throw new NotFoundException(`Tag with id ${id} not found`);
+      }
+
+      return await this.tagRepository.save(tag);
+    } catch (error) {
+      console.error('Error updating tag:', error);
+      throw new InternalServerErrorException('Failed to update tag');
     }
-
-    return this.tagRepository.save(tag);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.tagRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Tag with id ${id} not found`);
+  async remove(id: string) {
+    try {
+      const result = await this.tagRepository.delete(id);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Tag with id ${id} not found`);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      throw new InternalServerErrorException('Failed to delete tag');
     }
   }
 
   async findTopSellingTags(): Promise<
     { tagName: string; totalSales: number }[]
   > {
-    const tags = await this.tagRepository.find();
+    try {
+      const tags = await this.tagRepository.find();
 
-    const tagsWithSales = await Promise.all(
-      tags.map(async (tag) => {
-        const totalSales = await this.productRepository
-          .createQueryBuilder('product')
-          .innerJoin('product.tags', 'tag')
-          .where('tag.id = :tagId', { tagId: tag.id })
-          .select('SUM(product.numberOfSales)', 'totalSales')
-          .getRawOne();
+      const tagsWithSales = await Promise.all(
+        tags.map(async (tag) => {
+          const totalSales = await this.productRepository
+            .createQueryBuilder('product')
+            .innerJoin('product.tags', 'tag')
+            .where('tag.id = :tagId', { tagId: tag.id })
+            .select('SUM(product.numberOfSales)', 'totalSales')
+            .getRawOne();
 
-        return {
-          tagName: tag.name,
-          totalSales: totalSales && totalSales.totalSales
-            ? parseInt(totalSales.totalSales, 10)
-            : 0,
-        };
-      }),
-    );
+          return {
+            tagName: tag.name,
+            totalSales:
+              totalSales && totalSales.totalSales
+                ? parseInt(totalSales.totalSales, 10)
+                : 0,
+          };
+        }),
+      );
 
-    return tagsWithSales;
+      return tagsWithSales;
+    } catch (error) {
+      console.error('Error finding top-selling tags:', error);
+      throw new InternalServerErrorException('Failed to find top-selling tags');
+    }
   }
 }

@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Put,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { CartItemService } from './cart-item.service';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
@@ -27,8 +29,15 @@ export class CartItemController {
   @Get()
   @ApiOperation({ summary: 'Get all cart items' })
   @ApiResponse({ status: 200, description: 'Return all cart items.' })
-  findAll() {
-    return this.cartItemService.findAll();
+  async findAll() {
+    try {
+      return await this.cartItemService.findAll();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get cart items',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':id')
@@ -36,10 +45,20 @@ export class CartItemController {
   @ApiResponse({ status: 200, description: 'Return the cart item.' })
   @ApiResponse({ status: 404, description: 'Cart item not found.' })
   @ApiParam({ name: 'id', required: true, description: 'ID of the cart item' })
-  findOne(@Param('id') id: string) {
-    return this.cartItemService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    try {
+      const cartItem = await this.cartItemService.findOne(id);
+      if (!cartItem) {
+        throw new HttpException('Cart item not found', HttpStatus.NOT_FOUND);
+      }
+      return cartItem;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get cart item',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a cart item by ID' })
@@ -49,8 +68,19 @@ export class CartItemController {
   })
   @ApiResponse({ status: 404, description: 'Cart item not found.' })
   @ApiParam({ name: 'id', required: true, description: 'ID of the cart item' })
-  remove(@Param('id') id: string) {
-    return this.cartItemService.remove(id);
+  async remove(@Param('id') id: string) {
+    try {
+      const result = await this.cartItemService.remove(id);
+      if (!result) {
+        throw new HttpException('Cart item not found', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to delete cart item',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Put(':id/increment')
@@ -61,8 +91,19 @@ export class CartItemController {
   })
   @ApiResponse({ status: 404, description: 'Cart item not found.' })
   @ApiParam({ name: 'id', required: true, description: 'ID of the cart item' })
-  incrementCounter(@Param('id') id: string) {
-    return this.cartItemService.incrementCounter(id);
+  async incrementCounter(@Param('id') id: string) {
+    try {
+      const result = await this.cartItemService.incrementCounter(id);
+      if (!result) {
+        throw new HttpException('Cart item not found', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to increment counter',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Put(':id/decrement')
@@ -73,7 +114,18 @@ export class CartItemController {
   })
   @ApiResponse({ status: 404, description: 'Cart item not found.' })
   @ApiParam({ name: 'id', required: true, description: 'ID of the cart item' })
-  decrementCounter(@Param('id') id: string) {
-    return this.cartItemService.decrementCounter(id);
+  async decrementCounter(@Param('id') id: string) {
+    try {
+      const result = await this.cartItemService.decrementCounter(id);
+      if (!result) {
+        throw new HttpException('Cart item not found', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to decrement counter',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
