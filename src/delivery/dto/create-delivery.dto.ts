@@ -11,7 +11,6 @@ import { Order } from 'src/order/entities/order.entity';
 import { Column } from 'typeorm';
 
 export class CreateDeliveryDto {
-
   @ApiProperty({
     example: 'Ali',
     description: 'Driver name',
@@ -21,11 +20,24 @@ export class CreateDeliveryDto {
   name: string;
 
   @ApiProperty({
+    example: 'password@123',
+    description: 'Driver password',
+  })
+  @Column()
+  password?: string;
+
+  @ApiProperty({
+    example: 'deliveryMan or stockMan',
+    description: 'Driver role',
+  })
+  @Column({ length: 15 })
+  role?: string;
+
+  @ApiProperty({
     example: '01222222222',
     description: 'Driver phone',
   })
   @Column({ length: 15, unique: true })
   @IsNotEmpty()
   phone: string;
-
 }

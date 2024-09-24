@@ -48,9 +48,7 @@ export class UserService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.userRepository.find({
-      relations: ['cart', 'wishlist', 'addresses', 'orders'],
-    });
+    return this.userRepository.find();
   }
 
   async findUserById(id: string): Promise<User> {
@@ -282,7 +280,7 @@ export class UserService {
       user,
       products: cartItems.map((item) => item.product),
       price: totalPrice,
-      status: 'Pending',
+      status: 'ordered',
     });
 
     await this.orderRepository.save(order);

@@ -10,7 +10,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Order } from 'src/order/entities/order.entity';
-import { User } from 'src/user/entities/user.entity'; 
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Delivery {
@@ -20,16 +20,23 @@ export class Delivery {
   @Column()
   name: string;
 
+  @Column()
+  password: string;
+
+  @Column()
+  role: string;
+
   @Column({ unique: true })
   phone: string;
 
-  @OneToOne(() => Order, { eager: true, nullable: true })
+  @OneToMany(() => Order, (order) => order.delivery, {
+    eager: true,
+    nullable: true,
+  })
   @JoinColumn()
-  currentOrder?: Order;
+  currentOrders?: Order[];
 
   @Column({ type: 'timestamp', nullable: true })
-  dateOfAssignment?: Date; 
+  dateOfAssignment?: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
-  dateOfDelivered?: Date; 
 }

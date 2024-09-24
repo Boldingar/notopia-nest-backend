@@ -23,27 +23,28 @@ export class DeliveryService {
   }
 
   async findAll(): Promise<Delivery[]> {
-    return this.deliveryRepository.find({ relations: ['currentOrder'] });
+    return this.deliveryRepository.find({ relations: ['currentOrders'] });
   }
 
-  async findPendingOrders(): Promise<Order[]> {
-    return this.orderRepository.find({ where: { status: 'Pending' } });
-  }
-  
-  async findDeliveringOrders(): Promise<Order[]> {
-    return this.orderRepository.find({ where: { status: 'Delivering' } });
+  async getOrdersByStatus(status: string): Promise<Order[]> {
+    return this.orderRepository.find({ where: { status } });
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} delivery`;
+  async findOne(id: string): Promise<Delivery> {
+    return this.deliveryRepository.findOne({ where: { id } });
   }
 
-  async assignToOrder(
+  async changeOrderStatus(
     deliveryManId: string,
     orderId: string,
   ): Promise<Delivery> {
     const delivery = await this.deliveryRepository.findOne({
       where: { id: deliveryManId },
+      relations: ['currentOrders'],
+    });
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['user'],
     });
 
     if (!delivery) {
@@ -52,58 +53,39 @@ export class DeliveryService {
       );
     }
 
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['user'],
-    });
+    let status: string;
+    if (delivery.role === 'stockMan') {
+      status = 'in progress';
+    } else if (delivery.role === 'deliveryMan') {
+      if (!delivery.currentOrders) {
+        delivery.currentOrders = [];
+      }
+
+      const existingOrderIndex = delivery.currentOrders.findIndex(
+        (o) => o.id === orderId,
+      );
+
+      if (existingOrderIndex === -1) {
+        status = 'picked up';
+        delivery.currentOrders.push(order);
+        delivery.dateOfAssignment = new Date();
+      } else {
+        status = 'delivered';
+        delivery.currentOrders.splice(existingOrderIndex, 1);
+        order.deliveredAt = new Date();
+      }
+    }
 
     order.deliveryId = delivery.id;
-    order.status = 'Delivering';
-
-    delivery.currentOrder = order;
-    delivery.dateOfAssignment = new Date();
+    order.status = status;
 
     await this.orderRepository.save(order);
-
     await this.deliveryRepository.save(delivery);
 
     return delivery;
   }
 
-  async orderDelivered(
-    deliveryManId: string,
-    orderId: string,
-  ): Promise<Delivery> {
-    const delivery = await this.deliveryRepository.findOne({
-      where: { id: deliveryManId },
-    });
-
-    if (!delivery) {
-      throw new NotFoundException(
-        `Delivery for delivery man with ID ${deliveryManId} not found`,
-      );
-    }
-
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['user'],
-    });
-
-
-    order.status = 'Delivered';
-    order.deliveredAt = new Date();
-
-    delivery.currentOrder = null;
-    delivery.dateOfAssignment = null;
-
-    await this.orderRepository.save(order);
-
-    await this.deliveryRepository.save(delivery);
-
-    return delivery;
-  }
-
-  remove(id: number) {
+  async remove(id: number) {
     return `This action removes a #${id} delivery`;
   }
 }

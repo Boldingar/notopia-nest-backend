@@ -25,88 +25,73 @@ import { Delivery } from './entities/delivery.entity';
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
 
-  @ApiOperation({ summary: 'Creates a new delivery object' })
+  @ApiOperation({ summary: 'Creates a new delivery' })
   @ApiResponse({
     status: 201,
-    description: 'The Delivery has been successfully created.',
+    description: 'Delivery has been successfully created.',
     type: Delivery,
   })
-  @ApiResponse({ status: 200, description: 'Creation successed' })
-  @ApiResponse({ status: 404, description: 'Creation failed' })
+  @ApiResponse({ status: 400, description: 'Creation failed' })
   @ApiBody({ type: CreateDeliveryDto })
   @Post()
   async create(@Body() createDeliveryDto: CreateDeliveryDto) {
     return this.deliveryService.create(createDeliveryDto);
   }
 
-  @ApiOperation({ summary: 'Get Pending orders' })
-  @ApiResponse({ status: 200, description: 'List of all orders' })
-  @ApiResponse({ status: 404, description: 'Deliveries not found' })
-  @Get('pending')
-  async getPendingOrders(): Promise<Order[]> {
-    return this.deliveryService.findPendingOrders();
+ @ApiOperation({ summary: 'Get orders by status' })
+  @ApiParam({ name: 'status', enum: ['ordered', 'in progress', 'picked up', 'delivered'], required: true })
+  @ApiResponse({ status: 200, description: 'List of orders by status' })
+  @ApiResponse({ status: 404, description: 'No orders found for the given status' })
+  @Get(':status')
+  async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
+    return this.deliveryService.getOrdersByStatus(status);
   }
 
-  @ApiOperation({ summary: 'Get Dilevering orders' })
-  @ApiResponse({ status: 200, description: 'List of all orders' })
-  @ApiResponse({ status: 404, description: 'Deliveries not found' })
-  @Get('dilevering')
-  async getDeilveringOrders(): Promise<Order[]> {
-    return this.deliveryService.findDeliveringOrders();
-  }
 
-  @ApiOperation({ summary: 'Get an order' })
-  @ApiResponse({ status: 200, description: 'Get an order' })
+  @ApiOperation({ summary: 'Get details of a specific delivery' })
+  @ApiResponse({ status: 200, description: 'Delivery details' })
   @ApiResponse({ status: 404, description: 'Delivery not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the delivery' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<Delivery> {
     return this.deliveryService.findOne(id);
   }
 
-  @ApiOperation({ summary: 'Gets all delivery objects' })
+  @ApiOperation({ summary: 'Get all deliveries' })
+  @ApiResponse({ status: 200, description: 'List of all deliveries' })
+  @ApiResponse({ status: 404, description: 'No deliveries found' })
   @Get()
-  findAll() {
+  async findAll(): Promise<Delivery[]> {
     return this.deliveryService.findAll();
   }
 
-  @ApiOperation({ summary: 'Assign driver to order' })
-  @ApiResponse({ status: 200, description: 'Order assigned' })
-  @ApiResponse({ status: 404, description: 'Delivery not found' })
+  @ApiOperation({ summary: 'change status to an order' })
+  @ApiResponse({ status: 200, description: 'status changes successfully' })
+  @ApiResponse({ status: 404, description: 'Order or delivery not found' })
   @ApiParam({
     name: 'deliveryId',
     type: String,
     description: 'ID of the delivery',
   })
-  @ApiParam({ name: 'orderId', type: String, description: 'ID of the Order' })
-  @Patch('delivery/:deliveryId/order/:orderId')
-  assignToOrder(
+  @ApiParam({ name: 'orderId', type: String, description: 'ID of the order' })
+  @Patch(':deliveryId/order/:orderId')
+  async changeOrderStatud(
     @Param('deliveryId') deliveryId: string,
     @Param('orderId') orderId: string,
-    @Body() updateDeliveryDto: UpdateDeliveryDto,
-  ) {
-    return this.deliveryService.assignToOrder(deliveryId, orderId);
+  ): Promise<Delivery> {
+    return this.deliveryService.changeOrderStatus(deliveryId, orderId);
   }
 
-  @ApiOperation({ summary: 'change status of order to delivered' })
-  @ApiResponse({ status: 200, description: 'Order assigned' })
+  @ApiOperation({ summary: 'Delete a delivery' })
+  @ApiResponse({ status: 200, description: 'Delivery successfully deleted' })
   @ApiResponse({ status: 404, description: 'Delivery not found' })
   @ApiParam({
-    name: 'deliveryId',
+    name: 'id',
     type: String,
-    description: 'ID of the delivery',
+    description: 'ID of the delivery to be deleted',
   })
-  @ApiParam({ name: 'orderId', type: String, description: 'ID of the Order' })
-  @Patch('delivered/delivery/:deliveryId/order/:orderId')
-  orderDelivered(
-    @Param('deliveryId') deliveryId: string,
-    @Param('orderId') orderId: string,
-  ) {
-    return this.deliveryService.orderDelivered(deliveryId, orderId);
-  }
-
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.deliveryService.remove(+id);
   }
 }

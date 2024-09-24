@@ -1,13 +1,14 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, CreateDateColumn } from 'typeorm';
 import { Product } from 'src/product/entities/product.entity'; 
 import { User } from 'src/user/entities/user.entity';
+import { Delivery } from 'src/delivery/entities/delivery.entity';
 
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, user => user.orders)
+  @ManyToOne(() => User, (user) => user.orders)
   user: User;
 
   @ManyToMany(() => Product, { eager: true })
@@ -20,13 +21,15 @@ export class Order {
   @Column({ length: 50 })
   status: string;
 
-  @CreateDateColumn({type:'timestamp'})
+  @CreateDateColumn({ type: 'timestamp' })
   createdAtDate: Date;
 
-  @Column({ nullable: true }) 
+  @Column({ nullable: true })
   deliveryId: string;
 
   @Column({ type: 'timestamp', nullable: true })
   deliveredAt?: Date;
 
+  @ManyToOne(() => Delivery, (delivery) => delivery.currentOrders)
+  delivery: Delivery;
 }
