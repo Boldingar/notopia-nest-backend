@@ -59,35 +59,4 @@ export class CreateUserDto {
   @IsOptional()
   flag?: 'customer' | 'admin';
 
-  @ApiProperty({
-    example: [
-      {
-        id: '1',
-        name: 'Product 1',
-        price: 100,
-        stock: 10,
-      },
-    ],
-    type: [Product],
-    required: false,
-  })
-  @IsOptional()
-  @IsArray()
-  cart?: Product[];
-
-  @ApiProperty({
-    example: [
-      {
-        id: '2',
-        name: 'Product 2',
-        price: 200,
-        stock: 5,
-      },
-    ],
-    type: [Product],
-    required: false,
-  })
-  @IsOptional()
-  @IsArray()
-  wishlist?: Product[];
 }

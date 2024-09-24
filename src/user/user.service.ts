@@ -15,7 +15,6 @@ import { Voucher } from 'src/voucher/entities/voucher.entity';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import * as bcrypt from 'bcrypt';
 
-
 @Injectable()
 export class UserService {
   constructor(
@@ -32,7 +31,7 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { cart = [], wishlist = [], password } = createUserDto;
+    const { password } = createUserDto;
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -40,8 +39,6 @@ export class UserService {
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
-      cart,
-      wishlist,
     });
 
     return this.userRepository.save(user);
@@ -61,7 +58,7 @@ export class UserService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user; 
+    return user;
   }
 
   async findUserByPhone(phone: string): Promise<User> {
@@ -162,7 +159,7 @@ export class UserService {
 
     return { cart: user.cart, totalPrice };
   }
-  
+
   async removeFromCart(
     userId: string,
     productId: string,
