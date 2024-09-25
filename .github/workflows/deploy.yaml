@@ -16,8 +16,8 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
+      # - name: Install dependencies
+      #   run: npm install
 
       # Step 5: Copy the SSH key for EC2 access
       - name: Add SSH Key
@@ -28,8 +28,9 @@ jobs:
           password: ${{ secrets.DO_PASSWORD }}
           port: 22
           script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
             cd ${{ secrets.DO_PATH }}
             git pull origin main
             npm install
             pm2 restart all  # Assuming you're using PM2 to manage your Node.js app
-            EOF
