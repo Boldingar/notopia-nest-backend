@@ -1,5 +1,5 @@
 
-name: CI/CD to AWS EC2
+name: CI/CD to DigitalOcean droplet
 
 on:
   push:
@@ -23,13 +23,13 @@ jobs:
       - name: Add SSH Key
         uses: webfactory/ssh-agent@v0.8.1
         with:
-          ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
+          ssh-private-key: ${{ secrets.DO_SSH_KEY }}
 
       # Step 6: Deploy to AWS EC2
-      - name: Deploy to EC2
+      - name: Deploy to droplet
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} << 'EOF'
-            cd ${{ secrets.AWS_PATH }}
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
+            cd ${{ secrets.DO_PATH }}
             git pull origin main
             npm install
             pm2 restart all  # Assuming you're using PM2 to manage your Node.js app
