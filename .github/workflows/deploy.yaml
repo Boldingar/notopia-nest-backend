@@ -33,4 +33,5 @@ jobs:
             cd ${{ secrets.DO_PATH }}
             git pull origin main
             npm install
+            npm run build
             pm2 restart all  # Assuming you're using PM2 to manage your Node.js app
