@@ -21,16 +21,15 @@ jobs:
 
       # Step 5: Copy the SSH key for EC2 access
       - name: Add SSH Key
-        uses: webfactory/ssh-agent@v0.8.1
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          ssh-private-key: ${{ secrets.DO_SSH_KEY }}
-
-      # Step 6: Deploy to AWS EC2
-      - name: Deploy to droplet
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          port: 22
+          script: |
             cd ${{ secrets.DO_PATH }}
             git pull origin main
             npm install
             pm2 restart all  # Assuming you're using PM2 to manage your Node.js app
-          EOF
+            EOF
