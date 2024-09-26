@@ -24,6 +24,9 @@ export class Address {
   @Column({ length: 255, nullable: true })
   label: string;
 
+  @Column({ length: 15, unique: true, nullable: true })
+  phone: string;
+
   @Column({ length: 100 })
   district: string;
 
