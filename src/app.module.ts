@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -14,7 +14,6 @@ import { TagModule } from './tag/tag.module';
 import { CategoryModule } from './category/category.module';
 import { Delivery } from './delivery/entities/delivery.entity';
 
-
 import { User } from './user/entities/user.entity';
 import { Order } from './order/entities/order.entity';
 import { Product } from './product/entities/product.entity';
@@ -29,7 +28,20 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { Brand } from './brand/entities/brand.entity';
 import { CartItemModule } from './cart-item/cart-item.module';
 import { CartItem } from './cart-item/entities/cart-item.entity';
-import { HealthController } from './healthCheck.controller'; 
+import { HealthController } from './healthCheck.controller';
+import { AuthenticationModule } from './authentication/authentication.module';
+import { AuthMiddleware } from './authMiddleware/auth.middleware';
+import { UserController } from './user/user.controller';
+import { VoucherController } from './voucher/voucher.controller';
+import { TagController } from './tag/tag.controller';
+import { ReviewController } from './review/review.controller';
+import { ProductController } from './product/product.controller';
+import { OrderController } from './order/order.controller';
+import { DeliveryController } from './delivery/delivery.controller';
+import { CategoryController } from './category/category.controller';
+import { CartItemController } from './cart-item/cart-item.controller';
+import { BrandController } from './brand/brand.controller';
+import { AddressController } from './address/address.controller';
 
 @Module({
   imports: [
@@ -80,8 +92,27 @@ import { HealthController } from './healthCheck.controller';
     BrandModule,
     DeliveryModule,
     CartItemModule,
+    AuthenticationModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes(
+        UserController,
+        VoucherController,
+        TagController,
+        ReviewController,
+        ProductController,
+        OrderController,
+        DeliveryController,
+        CategoryController,
+        CartItemController,
+        BrandController,
+        AddressController,
+      );
+  }
+}

@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -24,6 +25,7 @@ import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import { Voucher } from 'src/voucher/entities/voucher.entity';
 
 @ApiTags('user')
+@ApiBearerAuth('Bearer')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

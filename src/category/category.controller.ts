@@ -17,6 +17,7 @@ import {
   ApiBody,
   ApiParam,
   ApiConsumes,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -36,6 +37,7 @@ const multerStorage = multer.diskStorage({
   },
 });
 @ApiTags('category')
+@ApiBearerAuth('Bearer')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

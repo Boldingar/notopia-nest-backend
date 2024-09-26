@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
@@ -23,6 +24,7 @@ import { Tag } from './entities/tag.entity';
 import { Product } from 'src/product/entities/product.entity';
 
 @ApiTags('tags')
+@ApiBearerAuth('Bearer')
 @Controller('tags')
 export class TagController {
   constructor(private readonly tagService: TagService) {}

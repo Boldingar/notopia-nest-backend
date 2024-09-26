@@ -8,14 +8,25 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { VoucherService } from './voucher.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { Voucher } from './entities/voucher.entity';
+import { RolesGuard } from 'src/guards/Role.guard';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('vouchers')
+@UseGuards(RolesGuard)
+@ApiBearerAuth('Bearer')
 @Controller('voucher')
 export class VoucherController {
   constructor(private readonly voucherService: VoucherService) {}
@@ -39,6 +50,7 @@ export class VoucherController {
     }
   }
 
+  @Roles('admin', 'delivery')
   @Get()
   @ApiOperation({ summary: 'Get all vouchers' })
   @ApiResponse({

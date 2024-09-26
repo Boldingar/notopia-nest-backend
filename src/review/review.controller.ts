@@ -12,7 +12,9 @@ import {
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('Bearer')
 @Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}

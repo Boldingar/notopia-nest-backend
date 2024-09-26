@@ -20,6 +20,7 @@ import {
   ApiBody,
   ApiParam,
   ApiConsumes,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -31,17 +32,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 import { Product } from './entities/product.entity';
 
-
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, join(__dirname, '..', '..', 'src', 'images', 'product')); 
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'product'));
   },
   filename: (req, file, cb) => {
     const ext = file.mimetype.split('/')[1];
     cb(null, `product-${uuidv4()}.${ext}`);
   },
 });
-@ApiTags('product') 
+
+@ApiTags('product')
+@ApiBearerAuth('Bearer')
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
@@ -229,8 +231,8 @@ export class ProductController {
   })
   @Get('relatedProducts/:productId')
   async getRelatedProducts(
-  @Param('productId') productId: string,
-): Promise<{ product: Product; mutualTagCount: number }[]> {
+    @Param('productId') productId: string,
+  ): Promise<{ product: Product; mutualTagCount: number }[]> {
     return this.productService.getRelatedProducts(productId);
   }
 }
