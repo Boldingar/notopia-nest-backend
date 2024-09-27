@@ -23,8 +23,13 @@ export class Delivery {
   @Column()
   password: string;
 
-  @Column()
-  role: string;
+  @Column({
+    type: 'enum',
+    enum: ['delivery', 'stock'],
+    nullable: true,
+    default: 'delivery',
+  })
+  flag: 'delivery' | 'stock';
 
   @Column({ unique: true })
   phone: string;
@@ -38,5 +43,4 @@ export class Delivery {
 
   @Column({ type: 'timestamp', nullable: true })
   dateOfAssignment?: Date;
-
 }

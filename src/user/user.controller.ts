@@ -40,6 +40,47 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @ApiOperation({ summary: "Add a product to the user's wishlist" })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been added to the wishlist.',
+  })
+  @ApiResponse({ status: 404, description: 'User or product not found.' })
+  @ApiResponse({ status: 400, description: 'Invalid product or user.' })
+  @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
+  @ApiParam({
+    name: 'productId',
+    type: String,
+    description: 'ID of the product to add to the wishlist',
+  })
+  @Post(':userId/wishlist/:productId')
+  async addToWishlist(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ): Promise<User> {
+    return this.userService.addToWishlist(userId, productId);
+  }
+
+  @ApiOperation({ summary: "Remove a product from the user's wishlist" })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been removed from the wishlist successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'User or product not found.' })
+  @ApiResponse({ status: 400, description: 'Invalid product or user.' })
+  @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
+  @ApiParam({
+    name: 'productId',
+    type: String,
+    description: 'ID of the product to remove from the wishlist',
+  })
+  @Delete(':userId/wishlist/:productId')
+  async removeFromWishlist(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ): Promise<User> {
+    return this.userService.removeFromWishlist(userId, productId);
+  }
   @ApiOperation({ summary: 'Get the number of users who already ordered once' })
   @ApiResponse({
     status: 200,

@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { DeliveryService } from './delivery.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
-import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -23,6 +23,7 @@ import { Order } from 'src/order/entities/order.entity';
 import { Delivery } from './entities/delivery.entity';
 
 @ApiTags('Delivery')
+@ApiBearerAuth('Bearer')
 @Controller('delivery')
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
@@ -50,7 +51,7 @@ export class DeliveryController {
   @ApiOperation({ summary: 'Get orders by status' })
   @ApiParam({
     name: 'status',
-    enum: ['ordered', 'in progress', 'picked up', 'delivered'],
+    enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
     required: true,
   })
   @ApiResponse({ status: 200, description: 'List of orders by status' })
