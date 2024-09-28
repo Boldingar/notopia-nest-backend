@@ -21,13 +21,14 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('cart-item')
 @ApiBearerAuth('Bearer')
 @Controller('cart-item')
 export class CartItemController {
   constructor(private readonly cartItemService: CartItemService) {}
-
+  @Roles('admin', 'customer')
   @Get()
   @ApiOperation({ summary: 'Get all cart items' })
   @ApiResponse({ status: 200, description: 'Return all cart items.' })
@@ -42,6 +43,7 @@ export class CartItemController {
     }
   }
 
+  @Roles('admin', 'customer')
   @Get(':id')
   @ApiOperation({ summary: 'Get a cart item by ID' })
   @ApiResponse({ status: 200, description: 'Return the cart item.' })
@@ -62,6 +64,7 @@ export class CartItemController {
     }
   }
 
+  @Roles('admin', 'customer')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a cart item by ID' })
   @ApiResponse({
@@ -84,7 +87,7 @@ export class CartItemController {
       );
     }
   }
-
+  @Roles('admin', 'customer')
   @Put(':id/increment')
   @ApiOperation({ summary: 'Increment the counter of a cart item by ID' })
   @ApiResponse({
@@ -108,6 +111,7 @@ export class CartItemController {
     }
   }
 
+  @Roles('admin', 'customer')
   @Put(':id/decrement')
   @ApiOperation({ summary: 'Decrement the counter of a cart item by ID' })
   @ApiResponse({

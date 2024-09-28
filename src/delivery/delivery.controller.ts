@@ -61,7 +61,7 @@ export class DeliveryController {
     status: 404,
     description: 'No orders found for the given status',
   })
-  @Roles('stock')
+  @Roles('stock', 'delivery')
   @Get(':status')
   async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
     try {
@@ -98,6 +98,7 @@ export class DeliveryController {
   @ApiOperation({ summary: 'Get all deliveries' })
   @ApiResponse({ status: 200, description: 'List of all deliveries' })
   @ApiResponse({ status: 404, description: 'No deliveries found' })
+  @Roles('admin', 'delivery', 'stock')
   @Get()
   async findAll(): Promise<Delivery[]> {
     try {
@@ -119,6 +120,7 @@ export class DeliveryController {
     description: 'ID of the delivery',
   })
   @ApiParam({ name: 'orderId', type: String, description: 'ID of the order' })
+  @Roles('admin', 'delivery', 'stock')
   @Patch(':deliveryId/order/:orderId')
   async changeOrderStatus(
     @Param('deliveryId') deliveryId: string,
@@ -142,6 +144,7 @@ export class DeliveryController {
     type: String,
     description: 'ID of the delivery to be deleted',
   })
+  @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {

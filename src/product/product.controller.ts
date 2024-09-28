@@ -33,6 +33,7 @@ import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 import { Product } from './entities/product.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -56,6 +57,7 @@ export class ProductController {
     description: 'The product has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin')
   @Post()
   @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
@@ -85,6 +87,7 @@ export class ProductController {
   })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('topSelling')
   async findTopSellingProducts(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -95,7 +98,7 @@ export class ProductController {
   }> {
     return this.productService.findTopSellingProducts(page, limit);
   }
-  
+
   @ApiOperation({ summary: 'Get new arrivals in the last 5 days' })
   @ApiResponse({
     status: 200,
@@ -103,6 +106,7 @@ export class ProductController {
   })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('newArrivals')
   async getNewArrivals(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -115,6 +119,7 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'List of all products' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get()
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -127,6 +132,7 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'List of all main products' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('main')
   findMain(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -139,6 +145,7 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'List of all side products' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('side')
   findSide(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -154,6 +161,7 @@ export class ProductController {
   })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('flashSale')
   async getFlashSales(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -166,6 +174,7 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product found' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
@@ -177,6 +186,7 @@ export class ProductController {
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('linked/:id')
   findLinkedProducts(
     @Param('id') id: string,
@@ -193,6 +203,7 @@ export class ProductController {
   })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Roles('admin')
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
@@ -220,6 +231,7 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product has been deleted.' })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
@@ -238,6 +250,7 @@ export class ProductController {
   })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('search/:search')
   @UsePipes(new ValidationPipe({ transform: true }))
   async search(

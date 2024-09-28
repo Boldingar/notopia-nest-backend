@@ -23,6 +23,7 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('order')
 @ApiBearerAuth('Bearer')
@@ -36,6 +37,7 @@ export class OrderController {
     description: 'The order has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Post()
   @ApiBody({ type: CreateOrderDto })
   async create(@Body() createOrderDto: CreateOrderDto) {
@@ -48,6 +50,7 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Get all orders' })
   @ApiResponse({ status: 200, description: 'List of all orders' })
+  @Roles('admin', 'delivery', 'stock')
   @Get()
   async findAll() {
     try {
@@ -67,6 +70,7 @@ export class OrderController {
     enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
     required: true,
   })
+  @Roles('admin', 'delivery', 'stock')
   @Get()
   async findOrdersByStatus(@Query('status') status: string) {
     try {
@@ -86,6 +90,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order found' })
   @ApiResponse({ status: 404, description: 'Order not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -109,6 +114,7 @@ export class OrderController {
   })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Patch(':id')
   @ApiBody({ type: UpdateOrderDto })
   async update(
@@ -133,6 +139,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order has been deleted.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
+  @Roles('admin', 'customer')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
@@ -158,6 +165,7 @@ export class OrderController {
     required: true,
     description: 'User ID',
   })
+  @Roles('admin', 'customer')
   @Get('user/:userId')
   async getOrdersByUserId(@Param('userId') userId: string): Promise<Order[]> {
     try {

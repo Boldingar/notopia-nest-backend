@@ -27,6 +27,7 @@ import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
+import { Roles } from 'src/decorators/Role.decorator';
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, join(__dirname, '..', '..', 'src', 'images', 'categories')); 
@@ -48,6 +49,7 @@ export class CategoryController {
     description: 'The category has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin')
   @Post()
   @UseInterceptors(
     FileInterceptor('categoryImgUrl', { storage: multerStorage }),
@@ -71,6 +73,7 @@ export class CategoryController {
     status: 200,
     description: 'List of all categories without products',
   })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get()
   findAll() {
     return this.categoryService.findCategories();
@@ -81,6 +84,7 @@ export class CategoryController {
     status: 200,
     description: 'List of all categories without products',
   })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('/details')
   findAllDetails() {
     return this.categoryService.findAll();
@@ -88,6 +92,7 @@ export class CategoryController {
 
   @ApiOperation({ summary: 'Get categories number of sales' })
   @ApiResponse({ status: 200, description: 'Categories ranked by sales.' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('topSelling')
   async findTopSellingCategories(): Promise<
     { categoryName: string; totalSales: number }[]
@@ -99,6 +104,7 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: 'Category found' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoryService.findOne(id);
@@ -111,6 +117,7 @@ export class CategoryController {
   })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get(':id/products')
   findProducts(@Param('id') id: string) {
     return this.categoryService.findProducts(id);
@@ -123,6 +130,7 @@ export class CategoryController {
   })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
+  @Roles('admin')
   @Patch(':id')
   @UseInterceptors(
     FileInterceptor('categoryImgUrl', { storage: multerStorage }),
@@ -146,6 +154,7 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: 'Category has been deleted.' })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the category' })
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(id);

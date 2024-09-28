@@ -21,6 +21,7 @@ import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { Brand } from './entities/brand.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('brand')
 @ApiBearerAuth('Bearer')
@@ -34,6 +35,7 @@ export class BrandController {
     description: 'Brand has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Failed to create brand.' })
+  @Roles('admin')
   @Post()
   @ApiBody({ type: CreateBrandDto })
   async create(@Body() createBrandDto: CreateBrandDto): Promise<Brand> {
@@ -46,6 +48,7 @@ export class BrandController {
 
   @ApiOperation({ summary: 'Get all brands' })
   @ApiResponse({ status: 200, description: 'List of all brands.' })
+  @Roles('admin', 'customer')
   @Get()
   async findAll(): Promise<Brand[]> {
     try {
@@ -60,6 +63,7 @@ export class BrandController {
 
   @ApiOperation({ summary: 'Get top-selling brands' })
   @ApiResponse({ status: 200, description: 'Top-selling brands ranked.' })
+  @Roles('admin', 'customer')
   @Get('top-selling')
   async findTopSellingBrands(): Promise<
     { brandName: string; totalSales: number }[]
@@ -78,6 +82,7 @@ export class BrandController {
   @ApiResponse({ status: 200, description: 'Brand found.' })
   @ApiResponse({ status: 404, description: 'Brand not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the brand.' })
+  @Roles('admin', 'customer')
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Brand> {
     try {
@@ -98,6 +103,7 @@ export class BrandController {
   @ApiResponse({ status: 200, description: 'List of products for the brand.' })
   @ApiResponse({ status: 404, description: 'Brand not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the brand.' })
+  @Roles('admin', 'customer')
   @Get(':id/products')
   async findProducts(@Param('id') id: string): Promise<any[]> {
     try {
@@ -121,6 +127,7 @@ export class BrandController {
   })
   @ApiResponse({ status: 404, description: 'Brand not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the brand.' })
+  @Roles('admin')
   @Patch(':id')
   @ApiBody({ type: UpdateBrandDto })
   async update(
@@ -145,6 +152,7 @@ export class BrandController {
   @ApiResponse({ status: 200, description: 'Brand has been deleted.' })
   @ApiResponse({ status: 404, description: 'Brand not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the brand.' })
+  @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {

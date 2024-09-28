@@ -53,6 +53,7 @@ export class AddressController {
   @ApiResponse({ status: 200, description: 'List of all addresses' })
   @Roles('admin', 'delivery', 'customer')
   @Get()
+  @Roles('admin')
   async findAll() {
     try {
       return await this.addressService.findAll();
@@ -68,6 +69,7 @@ export class AddressController {
   @ApiResponse({ status: 200, description: 'Address found' })
   @ApiResponse({ status: 404, description: 'Address not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
+  @Roles('admin', 'customer')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -91,6 +93,7 @@ export class AddressController {
   })
   @ApiResponse({ status: 404, description: 'Address not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
+  @Roles('admin', 'customer')
   @Patch(':id')
   @ApiBody({ type: UpdateAddressDto })
   async update(
@@ -118,6 +121,7 @@ export class AddressController {
   @ApiResponse({ status: 200, description: 'Address has been deleted.' })
   @ApiResponse({ status: 404, description: 'Address not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
+  @Roles('admin', 'customer')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
@@ -147,6 +151,7 @@ export class AddressController {
     required: true,
     description: 'User ID',
   })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('user/:userId')
   async getAddressesByUserId(
     @Param('userId') userId: string,

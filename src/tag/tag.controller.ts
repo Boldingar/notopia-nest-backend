@@ -22,6 +22,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag } from './entities/tag.entity';
 import { Product } from 'src/product/entities/product.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('tags')
 @ApiBearerAuth('Bearer')
@@ -37,6 +38,7 @@ export class TagController {
     type: Tag,
   })
   @ApiResponse({ status: 400, description: 'Failed to create tag' })
+  @Roles('admin')
   @Post()
   async create(@Body() createTagDto: CreateTagDto) {
     try {
@@ -48,6 +50,7 @@ export class TagController {
 
   @ApiOperation({ summary: 'Retrieve all tags with their associated products' })
   @ApiResponse({ status: 200, description: 'Return all tags', type: [Tag] })
+  @Roles('admin', 'customer')
   @Get()
   async findAll() {
     try {
@@ -66,6 +69,7 @@ export class TagController {
     description: 'Return top-selling tags',
     type: [Tag],
   })
+  @Roles('admin', 'customer')
   @Get('top-selling')
   async findTopSellingTags() {
     try {
@@ -82,6 +86,7 @@ export class TagController {
   @ApiParam({ name: 'id', description: 'The ID of the tag' })
   @ApiResponse({ status: 200, description: 'Return a single tag', type: Tag })
   @ApiResponse({ status: 404, description: 'Tag not found' })
+  @Roles('admin', 'customer')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -107,6 +112,7 @@ export class TagController {
     type: Tag,
   })
   @ApiResponse({ status: 404, description: 'Tag not found' })
+  @Roles('admin')
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
     try {
@@ -127,6 +133,7 @@ export class TagController {
   @ApiParam({ name: 'id', description: 'The ID of the tag to delete' })
   @ApiResponse({ status: 204, description: 'Tag successfully deleted' })
   @ApiResponse({ status: 404, description: 'Tag not found' })
+  @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
@@ -151,6 +158,7 @@ export class TagController {
     type: [Product],
   })
   @ApiResponse({ status: 404, description: 'Tag not found' })
+  @Roles('admin', 'customer')
   @Get(':id/products')
   async findProducts(@Param('id') id: string) {
     try {
