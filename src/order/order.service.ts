@@ -72,17 +72,12 @@ export class OrderService {
     }
   }
 
-  async findOrdersByStatus(status: string): Promise<Order[]> {
+  async getOrdersByStatus(status: string): Promise<Order[]> {
     try {
-      return await this.orderRepository.find({
-        where: { status },
-        relations: ['user', 'products'],
-      });
+      return await this.orderRepository.find({ where: { status } });
     } catch (error) {
-      console.error(`Error finding orders with status ${status}:`, error);
-      throw new InternalServerErrorException(
-        `Failed to find orders with status ${status}`,
-      );
+      console.error('Error finding orders by status:', error);
+      throw new InternalServerErrorException('Failed to find orders by status');
     }
   }
 

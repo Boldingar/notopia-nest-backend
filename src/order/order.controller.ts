@@ -63,24 +63,25 @@ export class OrderController {
     }
   }
 
-  @ApiOperation({ summary: 'Get order by status' })
-  @ApiResponse({ status: 200, description: 'List of order by status' })
-  @ApiQuery({
+  @ApiOperation({ summary: 'Get orders by status' })
+  @ApiParam({
     name: 'status',
     enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
     required: true,
   })
-  @Roles('admin', 'delivery', 'stock')
-  @Get()
-  async findOrdersByStatus(@Query('status') status: string) {
+  @ApiResponse({ status: 200, description: 'List of orders by status' })
+  @ApiResponse({
+    status: 404,
+    description: 'No orders found for the given status',
+  })
+  @Roles('stock', 'delivery')
+  @Get(':status')
+  async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
     try {
-      if (!status) {
-        throw new HttpException('Status is required', HttpStatus.BAD_REQUEST);
-      }
-      return await this.orderService.findOrdersByStatus(status);
+      return await this.orderService.getOrdersByStatus(status);
     } catch (error) {
       throw new HttpException(
-        `Failed to get orders with status ${status}`,
+        'Failed to get orders by status',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
