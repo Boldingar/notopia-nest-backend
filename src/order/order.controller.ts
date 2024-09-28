@@ -74,7 +74,7 @@ export class OrderController {
     status: 404,
     description: 'No orders found for the given status',
   })
-  @Roles('stock', 'delivery')
+  @Roles('stock', 'delivery', 'admin')
   @Get(':status')
   async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
     try {
