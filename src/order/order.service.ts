@@ -72,27 +72,17 @@ export class OrderService {
     }
   }
 
-  async findDelivered(): Promise<Order[]> {
+  async findOrdersByStatus(status: string): Promise<Order[]> {
     try {
       return await this.orderRepository.find({
-        where: { status: 'Delivered' },
+        where: { status },
         relations: ['user', 'products'],
       });
     } catch (error) {
-      console.error('Error finding delivered orders:', error);
-      throw new InternalServerErrorException('Failed to find delivered orders');
-    }
-  }
-
-  async findPending(): Promise<Order[]> {
-    try {
-      return await this.orderRepository.find({
-        where: { status: 'Pending' },
-        relations: ['user', 'products'],
-      });
-    } catch (error) {
-      console.error('Error finding pending orders:', error);
-      throw new InternalServerErrorException('Failed to find pending orders');
+      console.error(`Error finding orders with status ${status}:`, error);
+      throw new InternalServerErrorException(
+        `Failed to find orders with status ${status}`,
+      );
     }
   }
 

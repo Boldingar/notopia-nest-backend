@@ -4,7 +4,7 @@ export class LoginDto {
   @ApiProperty({
     description:
       'User phone number in international format, starting with a + and followed by 10-15 digits.',
-    example: '+1234567890',
+    example: '01234567890',
   })
   @IsNotEmpty()
   @IsString()

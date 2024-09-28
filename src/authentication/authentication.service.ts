@@ -35,7 +35,7 @@ export class AuthenticationService {
       { expiresIn: '30d' },
     );
 
-    return { token, flag: user.flag };
+    return { token, flag: user.flag, user };
   }
 
   async deliveryLogin(loginDto: LoginDto) {
@@ -52,12 +52,12 @@ export class AuthenticationService {
     if (!result) throw new UnauthorizedException('Invalid credentials');
 
     const token = jwt.sign(
-      { id: delivery.id, flag: 'delivery' },
+      { id: delivery.id, flag: delivery.flag },
       process.env.JWT_SECRET,
       { expiresIn: '30d' },
     );
 
-    return { token, flag: 'delivery' };
+    return { token, flag: delivery.flag, delivery };
   }
 
   findAll() {

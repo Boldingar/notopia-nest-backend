@@ -83,7 +83,7 @@ export class ProductController {
   })
   @Get('topSelling')
   async findTopSellingProducts(): Promise<
-    { productName: string; numberOfSales: number }[]
+    { product: Product; numberOfSales: number }[]
   > {
     return this.productService.findTopSellingProducts();
   }

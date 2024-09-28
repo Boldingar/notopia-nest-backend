@@ -170,12 +170,34 @@ export class ProductService {
     const skip = Math.max(0, (page - 1) * take);
 
     const [result, total] = await this.productRepository.findAndCount({
-      relations: ['categories', 'linkedProducts', 'brand'],
       take,
       skip,
     });
-
     return { data: result, total };
+  }
+
+  async findTopSellingProducts(): Promise<
+    { product: Product; numberOfSales: number }[]
+  > {
+    const products = await this.productRepository.find();
+
+    const sortedProducts = products.sort(
+      (a, b) => b.numberOfSales - a.numberOfSales,
+    );
+
+    return sortedProducts.map((product) => ({
+      product: product,
+      numberOfSales: product.numberOfSales || 0,
+    }));
+  }
+
+  async getFlashSales(): Promise<{ data: Product[]; total: number }> {
+    const [data, total] = await this.productRepository.findAndCount({
+      where: {
+        discountPercentage: MoreThan(30),
+      },
+    });
+    return { data, total };
   }
 
   async findMain(
@@ -187,7 +209,7 @@ export class ProductService {
 
     const [result, total] = await this.productRepository.findAndCount({
       where: { type: ProductType.MAIN },
-      relations: ['categories', 'linkedProducts'],
+      // relations: ['categories', 'linkedProducts'],
       take,
       skip,
     });
@@ -204,7 +226,7 @@ export class ProductService {
 
     const [result, total] = await this.productRepository.findAndCount({
       where: { type: ProductType.SIDE },
-      relations: ['categories', 'linkedProducts'],
+      // relations: ['categories', 'linkedProducts'],
       take,
       skip,
     });
@@ -340,20 +362,6 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
-  async findTopSellingProducts(): Promise<
-    { productName: string; numberOfSales: number }[]
-  > {
-    const products = await this.productRepository.find();
-
-    const sortedProducts = products.sort(
-      (a, b) => b.numberOfSales - a.numberOfSales,
-    );
-
-    return sortedProducts.map((product) => ({
-      productName: product.name,
-      numberOfSales: product.numberOfSales || 0,
-    }));
-  }
 
   async searchProductsByName(
     name: string,
@@ -370,14 +378,6 @@ export class ProductService {
     });
 
     return { data: result, total };
-  }
-  async getFlashSales(): Promise<{ data: Product[]; total: number }> {
-    const [data, total] = await this.productRepository.findAndCount({
-      where: {
-        discountPercentage: MoreThan(30),
-      },
-    });
-    return { data, total };
   }
 
   async getRelatedProducts(

@@ -21,6 +21,7 @@ import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('address')
 @ApiBearerAuth('Bearer')
@@ -34,6 +35,7 @@ export class AddressController {
     description: 'The address has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin', 'customer')
   @Post()
   @ApiBody({ type: CreateAddressDto })
   async create(@Body() createAddressDto: CreateAddressDto) {
@@ -49,6 +51,7 @@ export class AddressController {
 
   @ApiOperation({ summary: 'Get all addresses' })
   @ApiResponse({ status: 200, description: 'List of all addresses' })
+  @Roles('admin', 'delivery', 'customer')
   @Get()
   async findAll() {
     try {

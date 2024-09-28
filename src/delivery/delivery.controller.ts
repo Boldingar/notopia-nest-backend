@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { Order } from 'src/order/entities/order.entity';
 import { Delivery } from './entities/delivery.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('Delivery')
 @ApiBearerAuth('Bearer')
@@ -36,6 +37,7 @@ export class DeliveryController {
   })
   @ApiResponse({ status: 400, description: 'Creation failed' })
   @ApiBody({ type: CreateDeliveryDto })
+  @Roles('admin', 'delivery', 'stock')
   @Post()
   async create(@Body() createDeliveryDto: CreateDeliveryDto) {
     try {
@@ -51,7 +53,7 @@ export class DeliveryController {
   @ApiOperation({ summary: 'Get orders by status' })
   @ApiParam({
     name: 'status',
-    enum: ['ordered', 'in progress', 'picked up', 'delivered'],
+    enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
     required: true,
   })
   @ApiResponse({ status: 200, description: 'List of orders by status' })
@@ -59,6 +61,7 @@ export class DeliveryController {
     status: 404,
     description: 'No orders found for the given status',
   })
+  @Roles('stock')
   @Get(':status')
   async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
     try {
@@ -75,6 +78,7 @@ export class DeliveryController {
   @ApiResponse({ status: 200, description: 'Delivery details' })
   @ApiResponse({ status: 404, description: 'Delivery not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the delivery' })
+  @Roles('admin', 'delivery', 'stock')
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Delivery> {
     try {

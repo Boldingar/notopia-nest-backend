@@ -21,14 +21,14 @@ export class VoucherService {
     try {
       const { discountPercentage, discountValue } = createVoucherDto;
 
-      if (
-        (discountPercentage !== undefined && discountValue !== undefined) ||
-        (discountPercentage === undefined && discountValue === undefined)
-      ) {
-        throw new BadRequestException(
-          'You must provide either discountPercentage or discountValue, but not both.',
-        );
-      }
+      // if (
+      //   (discountPercentage !== undefined && discountValue !== undefined) ||
+      //   (discountPercentage === undefined && discountValue === undefined)
+      // ) {
+      //   throw new BadRequestException(
+      //     'You must provide either discountPercentage or discountValue, but not both.',
+      //   );
+      // }
 
       const newVoucher = this.voucherRepository.create(createVoucherDto);
       return await this.voucherRepository.save(newVoucher);

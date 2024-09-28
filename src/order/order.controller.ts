@@ -8,6 +8,7 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
   ApiBody,
   ApiParam,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -58,29 +60,23 @@ export class OrderController {
     }
   }
 
-  @ApiOperation({ summary: 'Get all delivered orders' })
-  @ApiResponse({ status: 200, description: 'List of all orders' })
-  @Get('delivered')
-  async findDelivered() {
+  @ApiOperation({ summary: 'Get order by status' })
+  @ApiResponse({ status: 200, description: 'List of order by status' })
+  @ApiQuery({
+    name: 'status',
+    enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
+    required: true,
+  })
+  @Get()
+  async findOrdersByStatus(@Query('status') status: string) {
     try {
-      return await this.orderService.findDelivered();
+      if (!status) {
+        throw new HttpException('Status is required', HttpStatus.BAD_REQUEST);
+      }
+      return await this.orderService.findOrdersByStatus(status);
     } catch (error) {
       throw new HttpException(
-        'Failed to get delivered orders',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @ApiOperation({ summary: 'Get all pending orders' })
-  @ApiResponse({ status: 200, description: 'List of all pending orders' })
-  @Get('pending')
-  async findPending() {
-    try {
-      return await this.orderService.findPending();
-    } catch (error) {
-      throw new HttpException(
-        'Failed to get pending orders',
+        `Failed to get orders with status ${status}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
