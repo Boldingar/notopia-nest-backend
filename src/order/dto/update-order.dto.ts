@@ -22,14 +22,12 @@ export class UpdateOrderDto {
       'b1d85e3e-1c2b-4e1e-b6a6-8c8d0e65c4d8',
       'a3c95e4f-2d6b-4e1e-b6a6-8c8d0e65c4d9',
     ],
-    description: 'Optional array of product IDs',
+    description: 'Array of cart item IDs',
     type: [String],
-    required: false,
   })
-  @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  productIds?: string[];
+  products?: string[];
 
   @ApiProperty({
     example: 99.99,

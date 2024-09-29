@@ -10,6 +10,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Product } from 'src/product/entities/product.entity';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 
 @Injectable()
 export class OrderService {
@@ -22,11 +23,14 @@ export class OrderService {
 
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+
+    @InjectRepository(CartItem)
+    private readonly cartItemRepository: Repository<CartItem>,
   ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     try {
-      const { userId, productIds, price, status } = createOrderDto;
+      const { userId, products, price, status } = createOrderDto; // productIds instead of productIds
 
       const user = await this.userRepository.findOne({
         where: { id: userId },
@@ -36,28 +40,106 @@ export class OrderService {
         throw new NotFoundException(`User with ID ${userId} not found`);
       }
 
-      const products = await this.productRepository.findBy({
-        id: In(productIds),
+      // Find cart items by their IDs
+      const cartItems = await this.cartItemRepository.findBy({
+        id: In(products),
       });
-      if (products.length !== productIds.length) {
-        throw new NotFoundException('One or more products not found');
+
+      // Check if all cart items are found
+      if (cartItems.length !== products.length) {
+        throw new NotFoundException('One or more cart items not found');
       }
 
+      // Create the order and assign the found cart items to the products field
       const order = this.orderRepository.create({
-        ...createOrderDto,
+        user, // Associate the order with the user
+        products: cartItems, // cartItems is an array of CartItem[]
+        price,
+        status,
       });
 
+      // Save the order
       const savedOrder = await this.orderRepository.save(order);
 
-      user.orders = user.orders || [];
-
-      user.orders = [...user.orders, savedOrder];
+      // Add the saved order to the user's orders
+      user.orders = [...(user.orders || []), savedOrder];
       await this.userRepository.save(user);
 
       return savedOrder;
     } catch (error) {
       console.error('Error creating order:', error);
       throw new InternalServerErrorException('Failed to create order');
+    }
+  }
+
+  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+    try {
+      const { userId, products, price, status } = updateOrderDto; // productIds instead of productIds
+
+      // Load the existing order by id
+      const order = await this.orderRepository.preload({
+        id,
+        price,
+        status,
+      });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${id} not found`);
+      }
+
+      // If userId is provided, update the user related to the order
+      if (userId) {
+        const user = await this.userRepository.findOne({
+          where: { id: userId },
+          relations: ['orders'],
+        });
+
+        if (!user) {
+          throw new NotFoundException(`User with ID ${userId} not found`);
+        }
+
+        // Remove the order from the previous user if necessary
+        if (order.user && order.user.id !== userId) {
+          const previousUser = await this.userRepository.findOne({
+            where: { id: order.user.id },
+            relations: ['orders'],
+          });
+
+          if (previousUser) {
+            previousUser.orders = previousUser.orders.filter(
+              (o) => o.id !== order.id,
+            );
+            await this.userRepository.save(previousUser);
+          }
+        }
+
+        // Update the user associated with the order
+        user.orders = [...(user.orders || []), order];
+        await this.userRepository.save(user);
+
+        order.user = user;
+      }
+
+      // If productIds are provided, update the cart items
+      if (products) {
+        const cartItems = await this.cartItemRepository.find({
+          where: { id: In(products) }, // Fetch CartItems by their IDs
+          relations: ['product'], // Get related products
+        });
+
+        if (cartItems.length !== products.length) {
+          throw new NotFoundException('One or more cart items not found');
+        }
+
+        // Update the order's products (which are CartItems)
+        order.products = cartItems;
+      }
+
+      // Save the updated order
+      return await this.orderRepository.save(order);
+    } catch (error) {
+      console.error('Error updating order:', error);
+      throw new InternalServerErrorException('Failed to update order');
     }
   }
 
@@ -99,60 +181,6 @@ export class OrderService {
     } catch (error) {
       console.error('Error finding order:', error);
       throw new InternalServerErrorException('Failed to find order');
-    }
-  }
-
-  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
-    try {
-      const { userId, productIds, price, status } = updateOrderDto;
-
-      const order = await this.orderRepository.preload({
-        id,
-        ...updateOrderDto,
-      });
-
-      if (!order) {
-        throw new NotFoundException(`Order with ID ${id} not found`);
-      }
-
-      if (userId) {
-        const user = await this.userRepository.findOneBy({ id: userId });
-        if (!user) {
-          throw new NotFoundException(`User with ID ${userId} not found`);
-        }
-
-        if (order.user) {
-          const previousUser = await this.userRepository.findOneBy({
-            id: order.user.id,
-          });
-          if (previousUser) {
-            previousUser.orders = previousUser.orders.filter(
-              (o) => o.id !== id,
-            );
-            await this.userRepository.save(previousUser);
-          }
-        }
-
-        user.orders = [...user.orders, order];
-        await this.userRepository.save(user);
-
-        order.user = user;
-      }
-
-      if (productIds) {
-        const products = await this.productRepository.findBy({
-          id: In(productIds),
-        });
-        if (products.length !== productIds.length) {
-          throw new NotFoundException('One or more products not found');
-        }
-        order.products = products;
-      }
-
-      return await this.orderRepository.save(order);
-    } catch (error) {
-      console.error('Error updating order:', error);
-      throw new InternalServerErrorException('Failed to update order');
     }
   }
 

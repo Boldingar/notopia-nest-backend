@@ -275,7 +275,7 @@ export class UserService {
 
     const order = this.orderRepository.create({
       user,
-      products: cartItems.map((item) => item.product),
+      products: cartItems,
       price: totalPrice,
       status: 'ordered',
     });
