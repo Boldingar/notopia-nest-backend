@@ -199,12 +199,26 @@ export class ProductService {
 
     // Map the products to the expected structure
     const data = sortedProducts.map((product) => ({
-      product,
+      product: product,
       numberOfSales: product.numberOfSales || 0,
     }));
 
     return { data, total };
   }
+  // async findTopSellingProducts(): Promise<
+  //   { product: Product; numberOfSales: number }[]
+  // > {
+  //   const products = await this.productRepository.find();
+
+  //   const sortedProducts = products.sort(
+  //     (a, b) => b.numberOfSales - a.numberOfSales,
+  //   );
+
+  //   return sortedProducts.map((product) => ({
+  //     product: product,
+  //     numberOfSales: product.numberOfSales || 0,
+  //   }));
+  // }
 
   async getFlashSales(
     page: number,

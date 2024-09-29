@@ -98,7 +98,7 @@ export class ProductController {
   }> {
     return this.productService.findTopSellingProducts(page, limit);
   }
-
+  
   @ApiOperation({ summary: 'Get new arrivals in the last 5 days' })
   @ApiResponse({
     status: 200,
