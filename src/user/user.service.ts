@@ -209,6 +209,7 @@ export class UserService {
     userId: string,
     addressIndex: number,
     voucherName?: string,
+    scheduleDelivery?: Date,
   ): Promise<Order> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -278,6 +279,7 @@ export class UserService {
       products: cartItems,
       price: totalPrice,
       status: 'ordered',
+      scheduleDelivery: scheduleDelivery
     });
 
     await this.orderRepository.save(order);

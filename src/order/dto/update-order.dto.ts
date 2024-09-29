@@ -5,6 +5,7 @@ import {
   IsArray,
   IsOptional,
   IsUUID,
+  IsDate,
 } from 'class-validator';
 
 export class UpdateOrderDto {
@@ -54,4 +55,13 @@ export class UpdateOrderDto {
   })
   @IsOptional()
   deliveryId?: string;
+
+  @ApiProperty({
+    example: '2024-09-30T12:00:00Z',
+    description: 'Scheduled delivery date and time',
+    required: false,
+  })
+  @IsOptional()
+  @IsDate()
+  scheduleDelivery?: Date;
 }

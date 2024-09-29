@@ -39,11 +39,11 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: ['customer', 'admin', 'delivery-man'],
+    enum: ['customer', 'admin'],
     nullable: true,
     default: 'customer',
   })
-  flag: 'customer' | 'admin' | 'delivery-man';
+  flag: 'customer' | 'admin';
 
   @OneToMany(() => CartItem, (cartItem) => cartItem.user, { cascade: true })
   cart: CartItem[];

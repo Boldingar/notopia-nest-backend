@@ -37,6 +37,9 @@ export class Order {
   deliveryId: string;
 
   @Column({ type: 'timestamp', nullable: true })
+  scheduleDelivery?: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
   deliveredAt?: Date;
 
   @ManyToOne(() => Delivery, (delivery) => delivery.currentOrders)
