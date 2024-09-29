@@ -50,5 +50,5 @@ export class CreateOrderDto {
   })
   @IsOptional()
   @IsDate()
-  scheduleDelivery?: Date; // Add this line
+  scheduleDelivery?: Date;
 }
