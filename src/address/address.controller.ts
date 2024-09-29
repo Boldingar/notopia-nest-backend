@@ -21,6 +21,7 @@ import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('address')
 @ApiBearerAuth('Bearer')
@@ -34,6 +35,7 @@ export class AddressController {
     description: 'The address has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin', 'customer')
   @Post()
   @ApiBody({ type: CreateAddressDto })
   async create(@Body() createAddressDto: CreateAddressDto) {
@@ -49,7 +51,9 @@ export class AddressController {
 
   @ApiOperation({ summary: 'Get all addresses' })
   @ApiResponse({ status: 200, description: 'List of all addresses' })
+  @Roles('admin', 'delivery', 'customer')
   @Get()
+  @Roles('admin')
   async findAll() {
     try {
       return await this.addressService.findAll();
@@ -65,6 +69,7 @@ export class AddressController {
   @ApiResponse({ status: 200, description: 'Address found' })
   @ApiResponse({ status: 404, description: 'Address not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
+  @Roles('admin', 'customer')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -88,6 +93,7 @@ export class AddressController {
   })
   @ApiResponse({ status: 404, description: 'Address not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
+  @Roles('admin', 'customer')
   @Patch(':id')
   @ApiBody({ type: UpdateAddressDto })
   async update(
@@ -115,6 +121,7 @@ export class AddressController {
   @ApiResponse({ status: 200, description: 'Address has been deleted.' })
   @ApiResponse({ status: 404, description: 'Address not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the address' })
+  @Roles('admin', 'customer')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
@@ -144,6 +151,7 @@ export class AddressController {
     required: true,
     description: 'User ID',
   })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('user/:userId')
   async getAddressesByUserId(
     @Param('userId') userId: string,

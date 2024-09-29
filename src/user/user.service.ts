@@ -373,4 +373,74 @@ export class UserService {
     user.vouchers = user.vouchers.filter((voucher) => voucher.id !== voucherId);
     return this.userRepository.save(user);
   }
+
+  async addToWishlist(phone: string, productId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { phone },
+      relations: ['wishlist'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with phone number ${phone} not found`);
+    }
+
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+
+    const isProductInWishlist = user.wishlist.some(
+      (wishlistProduct) => wishlistProduct.id === productId,
+    );
+
+    if (isProductInWishlist) {
+      throw new BadRequestException(
+        `Product with ID ${productId} is already in the wishlist`,
+      );
+    }
+
+    user.wishlist.push(product);
+
+    await this.userRepository.save(user);
+
+    return user;
+  }
+
+  async removeFromWishlist(phone: string, productId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { phone },
+      relations: ['wishlist'], // Ensure the wishlist relation is loaded
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with phone number ${phone} not found`);
+    }
+
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+
+    const productIndex = user.wishlist.findIndex(
+      (wishlistItem) => wishlistItem.id === productId,
+    );
+
+    if (productIndex === -1) {
+      throw new BadRequestException(
+        `Product with ID ${productId} is not in the wishlist`,
+      );
+    }
+
+    user.wishlist.splice(productIndex, 1);
+
+    await this.userRepository.save(user);
+
+    return user;
+  }
 }

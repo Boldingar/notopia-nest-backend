@@ -1,11 +1,10 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateDeliveryDto } from './create-delivery.dto';
-import { IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Column } from 'typeorm';
 import { Order } from 'src/order/entities/order.entity';
 
 export class UpdateDeliveryDto {
-
   @Column()
   currentOrder?: Order;
 
@@ -15,12 +14,10 @@ export class UpdateDeliveryDto {
   @Column()
   password?: string;
 
-  // @ApiProperty({
-  //   example: 'stockMan or deliveryMan',
-  //   description: 'Order details',
-  // })
-  @Column({ length: 15 })
-  role?: string;
+  @IsEnum(['delivery', 'stock'], {
+    message: 'flag must be either "delivery" or "stock"',
+  })
+  flag: 'delivery' | 'stock';
 
   @Column({ length: 15, unique: true })
   phone?: string;

@@ -12,6 +12,8 @@ import {
   UsePipes,
   Query,
   NotFoundException,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,16 +23,17 @@ import {
   ApiParam,
   ApiConsumes,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { BadRequestException } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { join } from 'path';
 import { Product } from './entities/product.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -54,6 +57,7 @@ export class ProductController {
     description: 'The product has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin')
   @Post()
   @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
@@ -81,36 +85,71 @@ export class ProductController {
     status: 200,
     description: 'Products ranked by number of sales',
   })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('topSelling')
-  async findTopSellingProducts(): Promise<
-    { productName: string; numberOfSales: number }[]
-  > {
-    return this.productService.findTopSellingProducts();
+  async findTopSellingProducts(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<{
+    data: { product: Product; numberOfSales: number }[];
+    total: number;
+  }> {
+    return this.productService.findTopSellingProducts(page, limit);
+  }
+
+  @ApiOperation({ summary: 'Get new arrivals in the last 5 days' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of new products created in the last 5 days',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
+  @Get('newArrivals')
+  async getNewArrivals(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<{ data: Product[]; total: number }> {
+    return this.productService.newArrivals(page, limit);
   }
 
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, description: 'List of all products' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get()
-  findAll(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
     return this.productService.findAll(page, limit);
   }
 
   @ApiOperation({ summary: 'Get Main products' })
   @ApiResponse({ status: 200, description: 'List of all main products' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('main')
   findMain(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     return this.productService.findMain(page, limit);
   }
 
   @ApiOperation({ summary: 'Get Side products' })
-  @ApiResponse({ status: 200, description: 'List of all products' })
+  @ApiResponse({ status: 200, description: 'List of all side products' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('side')
   findSide(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     return this.productService.findSide(page, limit);
   }
@@ -120,15 +159,22 @@ export class ProductController {
     status: 200,
     description: 'Products of discount more than 30% sale',
   })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('flashSale')
-  async getFlashSales(): Promise<{ data: Product[]; total: number }> {
-    return this.productService.getFlashSales();
+  async getFlashSales(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<{ data: Product[]; total: number }> {
+    return this.productService.getFlashSales(page, limit);
   }
 
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiResponse({ status: 200, description: 'Product found' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id);
@@ -138,11 +184,14 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product found' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('linked/:id')
   findLinkedProducts(
     @Param('id') id: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     return this.productService.findLinkedProducts(id, page, limit);
   }
@@ -154,6 +203,7 @@ export class ProductController {
   })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Roles('admin')
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('images', 15, { storage: multerStorage }))
   @ApiConsumes('multipart/form-data')
@@ -181,17 +231,12 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product has been deleted.' })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the product' })
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
 
-  @ApiOperation({ summary: 'Search products by name' })
-  @ApiResponse({
-    status: 200,
-    description: 'List of products matching the search name',
-    type: [Product],
-  })
   @ApiOperation({ summary: 'Search products by name' })
   @ApiResponse({
     status: 200,
@@ -203,36 +248,16 @@ export class ProductController {
     required: true,
     description: 'Name to search for products',
   })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get('search/:search')
   @UsePipes(new ValidationPipe({ transform: true }))
   async search(
     @Param('search') name: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ): Promise<{ data: Product[]; total: number }> {
     return this.productService.searchProductsByName(name, page, limit);
-  }
-
-  @ApiOperation({ summary: 'Search products by brand' })
-  @Get('/brand/:brandId')
-  async findProductsByBrand(
-    @Param('brandId') brandId: string,
-  ): Promise<Product[]> {
-    const products = await this.productService.findProductsByBrand(brandId);
-    if (!products || products.length === 0) {
-      throw new NotFoundException(`No products found for Brand ID ${brandId}`);
-    }
-    return products;
-  }
-  @ApiOperation({ summary: 'Get related products' })
-  @ApiResponse({
-    status: 200,
-    description: 'Products ranked relation',
-  })
-  @Get('relatedProducts/:productId')
-  async getRelatedProducts(
-    @Param('productId') productId: string,
-  ): Promise<{ product: Product; mutualTagCount: number }[]> {
-    return this.productService.getRelatedProducts(productId);
   }
 }

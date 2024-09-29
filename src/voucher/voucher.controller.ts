@@ -50,7 +50,7 @@ export class VoucherController {
     }
   }
 
-  @Roles('admin', 'delivery')
+  @Roles('admin', 'delivery', 'stock', 'customer')
   @Get()
   @ApiOperation({ summary: 'Get all vouchers' })
   @ApiResponse({
@@ -70,6 +70,7 @@ export class VoucherController {
     }
   }
 
+  @Roles('admin', 'delivery', 'stock')
   @Get(':id')
   @ApiOperation({ summary: 'Get a voucher by ID' })
   @ApiParam({
@@ -98,6 +99,7 @@ export class VoucherController {
     }
   }
 
+  @Roles('admin')
   @Patch(':id')
   @ApiOperation({ summary: 'Update a voucher by ID' })
   @ApiParam({
@@ -133,6 +135,7 @@ export class VoucherController {
     }
   }
 
+  @Roles('admin')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a voucher by ID' })
   @ApiParam({

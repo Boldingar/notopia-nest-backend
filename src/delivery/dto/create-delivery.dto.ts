@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsEnum,
 } from 'class-validator';
 import { Order } from 'src/order/entities/order.entity';
 import { Column } from 'typeorm';
@@ -27,11 +28,14 @@ export class CreateDeliveryDto {
   password?: string;
 
   @ApiProperty({
-    example: 'deliveryMan or stockMan',
-    description: 'Driver role',
+    example: 'delivery or stock',
+    description: 'Driver flag',
   })
-  @Column({ length: 15 })
-  role?: string;
+  @IsNotEmpty()
+  @IsEnum(['delivery', 'stock'], {
+    message: 'flag must be either "delivery" or "stock"',
+  })
+  flag: 'delivery' | 'stock';
 
   @ApiProperty({
     example: '01222222222',

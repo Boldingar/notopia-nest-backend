@@ -8,6 +8,7 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,11 +17,13 @@ import {
   ApiBody,
   ApiParam,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('order')
 @ApiBearerAuth('Bearer')
@@ -34,6 +37,7 @@ export class OrderController {
     description: 'The order has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Invalid input.' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Post()
   @ApiBody({ type: CreateOrderDto })
   async create(@Body() createOrderDto: CreateOrderDto) {
@@ -46,6 +50,7 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Get all orders' })
   @ApiResponse({ status: 200, description: 'List of all orders' })
+  @Roles('admin', 'delivery', 'stock')
   @Get()
   async findAll() {
     try {
@@ -58,29 +63,25 @@ export class OrderController {
     }
   }
 
-  @ApiOperation({ summary: 'Get all delivered orders' })
-  @ApiResponse({ status: 200, description: 'List of all orders' })
-  @Get('delivered')
-  async findDelivered() {
+  @ApiOperation({ summary: 'Get orders by status' })
+  @ApiParam({
+    name: 'status',
+    enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
+    required: true,
+  })
+  @ApiResponse({ status: 200, description: 'List of orders by status' })
+  @ApiResponse({
+    status: 404,
+    description: 'No orders found for the given status',
+  })
+  @Roles('stock', 'delivery', 'admin', 'user')
+  @Get(':status')
+  async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
     try {
-      return await this.orderService.findDelivered();
+      return await this.orderService.getOrdersByStatus(status);
     } catch (error) {
       throw new HttpException(
-        'Failed to get delivered orders',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @ApiOperation({ summary: 'Get all pending orders' })
-  @ApiResponse({ status: 200, description: 'List of all pending orders' })
-  @Get('pending')
-  async findPending() {
-    try {
-      return await this.orderService.findPending();
-    } catch (error) {
-      throw new HttpException(
-        'Failed to get pending orders',
+        'Failed to get orders by status',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -90,6 +91,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order found' })
   @ApiResponse({ status: 404, description: 'Order not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
@@ -113,6 +115,7 @@ export class OrderController {
   })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
+  @Roles('admin', 'customer', 'delivery', 'stock')
   @Patch(':id')
   @ApiBody({ type: UpdateOrderDto })
   async update(
@@ -137,6 +140,7 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order has been deleted.' })
   @ApiResponse({ status: 404, description: 'Order not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the order' })
+  @Roles('admin', 'customer')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
@@ -162,6 +166,7 @@ export class OrderController {
     required: true,
     description: 'User ID',
   })
+  @Roles('admin', 'customer')
   @Get('user/:userId')
   async getOrdersByUserId(@Param('userId') userId: string): Promise<Order[]> {
     try {

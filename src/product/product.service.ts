@@ -170,12 +170,57 @@ export class ProductService {
     const skip = Math.max(0, (page - 1) * take);
 
     const [result, total] = await this.productRepository.findAndCount({
-      relations: ['categories', 'linkedProducts', 'brand'],
+      take,
+      skip,
+    });
+    return { data: result, total };
+  }
+
+  async findTopSellingProducts(
+    page: number,
+    limit: number,
+  ): Promise<{
+    data: { product: Product; numberOfSales: number }[];
+    total: number;
+  }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+
+    // Get the total count of products
+    const [products, total] = await this.productRepository.findAndCount({
       take,
       skip,
     });
 
-    return { data: result, total };
+    // Sort the products by number of sales
+    const sortedProducts = products.sort(
+      (a, b) => (b.numberOfSales || 0) - (a.numberOfSales || 0),
+    );
+
+    // Map the products to the expected structure
+    const data = sortedProducts.map((product) => ({
+      product,
+      numberOfSales: product.numberOfSales || 0,
+    }));
+
+    return { data, total };
+  }
+
+  async getFlashSales(
+    page: number,
+    limit: number,
+  ): Promise<{ data: Product[]; total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+
+    const [data, total] = await this.productRepository.findAndCount({
+      where: {
+        discountPercentage: MoreThan(30),
+      },
+      take,
+      skip,
+    });
+    return { data, total };
   }
 
   async findMain(
@@ -187,7 +232,7 @@ export class ProductService {
 
     const [result, total] = await this.productRepository.findAndCount({
       where: { type: ProductType.MAIN },
-      relations: ['categories', 'linkedProducts'],
+      // relations: ['categories', 'linkedProducts'],
       take,
       skip,
     });
@@ -204,7 +249,7 @@ export class ProductService {
 
     const [result, total] = await this.productRepository.findAndCount({
       where: { type: ProductType.SIDE },
-      relations: ['categories', 'linkedProducts'],
+      // relations: ['categories', 'linkedProducts'],
       take,
       skip,
     });
@@ -248,15 +293,29 @@ export class ProductService {
     return { data: linkedProducts, total };
   }
 
-  async findProductsByBrand(brandId: string): Promise<Product[]> {
+  async findProductsByBrand(
+    brandId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ data: Product[]; total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+
     const brand = await this.brandRepository.findOne({
       where: { id: brandId },
     });
+
     if (!brand) {
       throw new NotFoundException(`Brand with ID ${brandId} not found`);
     }
 
-    return this.productRepository.find({ where: { brand } });
+    const [result, total] = await this.productRepository.findAndCount({
+      where: { brand },
+      take,
+      skip,
+    });
+
+    return { data: result, total };
   }
 
   async update(
@@ -340,20 +399,6 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
   }
-  async findTopSellingProducts(): Promise<
-    { productName: string; numberOfSales: number }[]
-  > {
-    const products = await this.productRepository.find();
-
-    const sortedProducts = products.sort(
-      (a, b) => b.numberOfSales - a.numberOfSales,
-    );
-
-    return sortedProducts.map((product) => ({
-      productName: product.name,
-      numberOfSales: product.numberOfSales || 0,
-    }));
-  }
 
   async searchProductsByName(
     name: string,
@@ -371,18 +416,15 @@ export class ProductService {
 
     return { data: result, total };
   }
-  async getFlashSales(): Promise<{ data: Product[]; total: number }> {
-    const [data, total] = await this.productRepository.findAndCount({
-      where: {
-        discountPercentage: MoreThan(30),
-      },
-    });
-    return { data, total };
-  }
 
   async getRelatedProducts(
     productId: string,
-  ): Promise<{ product: Product; mutualTagCount: number }[]> {
+    page: number,
+    limit: number,
+  ): Promise<{
+    data: { product: Product; mutualTagCount: number }[];
+    total: number;
+  }> {
     const product = await this.productRepository.findOne({
       where: { id: productId },
       relations: ['tags'],
@@ -395,15 +437,22 @@ export class ProductService {
     const tags = product.tags;
 
     if (!tags || tags.length === 0) {
-      return [];
+      return { data: [], total: 0 };
     }
 
-    const relatedProducts = await this.productRepository
+    // Set pagination variables
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+
+    // Query to find related products
+    const [relatedProducts, total] = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.tags', 'tag')
       .where('tag.id IN (:...tagIds)', { tagIds: tags.map((tag) => tag.id) })
       .andWhere('product.id != :productId', { productId })
-      .getMany();
+      .take(take)
+      .skip(skip)
+      .getManyAndCount();
 
     const productsWithMutualTagCount = relatedProducts.map((relatedProduct) => {
       const mutualTagCount = relatedProduct.tags.filter((tag) =>
@@ -420,6 +469,27 @@ export class ProductService {
       (a, b) => b.mutualTagCount - a.mutualTagCount,
     );
 
-    return productsWithMutualTagCount;
+    return { data: productsWithMutualTagCount, total };
+  }
+
+  async newArrivals(
+    page: number,
+    limit: number,
+  ): Promise<{ data: Product[]; total: number }> {
+    const take = Math.max(1, limit);
+    const skip = Math.max(0, (page - 1) * take);
+
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+    const [data, total] = await this.productRepository.findAndCount({
+      where: {
+        createdAt: MoreThan(fiveDaysAgo),
+      },
+      take,
+      skip,
+    });
+
+    return { data, total };
   }
 }

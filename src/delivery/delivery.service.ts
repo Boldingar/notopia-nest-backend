@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Delivery } from './entities/delivery.entity';
 import { Repository } from 'typeorm';
 import { Order } from 'src/order/entities/order.entity';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class DeliveryService {
   constructor(
@@ -21,8 +21,14 @@ export class DeliveryService {
 
   async create(createDeliveryDto: CreateDeliveryDto) {
     try {
+      const { password } = createDeliveryDto;
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
       const newDelivery: Delivery = this.deliveryRepository.create({
         ...createDeliveryDto,
+        password: hashedPassword,
       });
       return await this.deliveryRepository.save(newDelivery);
     } catch (error) {
@@ -85,9 +91,9 @@ export class DeliveryService {
       }
 
       let status: string;
-      if (delivery.role === 'stockMan') {
+      if (delivery.flag === 'stock') {
         status = 'in progress';
-      } else if (delivery.role === 'deliveryMan') {
+      } else if (delivery.flag === 'delivery') {
         if (!delivery.currentOrders) {
           delivery.currentOrders = [];
         }

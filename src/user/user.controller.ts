@@ -23,6 +23,7 @@ import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import { Voucher } from 'src/voucher/entities/voucher.entity';
+import { Roles } from 'src/decorators/Role.decorator';
 
 @ApiTags('user')
 @ApiBearerAuth('Bearer')
@@ -42,11 +43,56 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @ApiOperation({ summary: "Add a product to the user's wishlist" })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been added to the wishlist.',
+  })
+  @ApiResponse({ status: 404, description: 'User or product not found.' })
+  @ApiResponse({ status: 400, description: 'Invalid product or user.' })
+  @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
+  @ApiParam({
+    name: 'productId',
+    type: String,
+    description: 'ID of the product to add to the wishlist',
+  })
+  @Roles('admin', 'customer')
+  @Post(':userId/wishlist/:productId')
+  async addToWishlist(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ): Promise<User> {
+    return this.userService.addToWishlist(userId, productId);
+  }
+
+  @ApiOperation({ summary: "Remove a product from the user's wishlist" })
+  @ApiResponse({
+    status: 200,
+    description: 'The product has been removed from the wishlist successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'User or product not found.' })
+  @ApiResponse({ status: 400, description: 'Invalid product or user.' })
+  @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
+  @ApiParam({
+    name: 'productId',
+    type: String,
+    description: 'ID of the product to remove from the wishlist',
+  })
+  @Roles('customer', 'admin')
+  @Delete(':userId/wishlist/:productId')
+  async removeFromWishlist(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ): Promise<User> {
+    return this.userService.removeFromWishlist(userId, productId);
+  }
+
   @ApiOperation({ summary: 'Get the number of users who already ordered once' })
   @ApiResponse({
     status: 200,
     description: 'Number and percentage of users who already ordered once.',
   })
+  @Roles('admin')
   @Get('orderedUsersPercentage')
   async getOrderedUsersPercentage(): Promise<{
     orderedUsersCount: number;
@@ -67,6 +113,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Get total number of customers' })
   @ApiResponse({ status: 200, description: 'Total number of customers' })
+  @Roles('admin')
   @Get('totalCustomers')
   async getTotalCustomers(): Promise<{ totalCustomers: number }> {
     const totalCustomers = await this.userService.getTotalCustomers();
@@ -75,6 +122,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'List of all users' })
+  @Roles('admin')
   @Get()
   async findAll() {
     return this.userService.findAll();
@@ -83,6 +131,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User found' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
+  @Roles('customer', 'admin')
   @Get(':id')
   async findUserById(@Param('id') id: string): Promise<User> {
     const user = await this.userService.findUserById(id);
@@ -92,6 +141,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User found' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiParam({ name: 'phone', type: String, description: 'phone of the user' })
+  @Roles('customer', 'admin', 'delivery')
   @Get('phone/:phone')
   async findUserByPhone(@Param('phone') phone: string) {
     return this.userService.findUserByPhone(phone);
@@ -99,6 +149,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Get all vouchers for a user' })
   @ApiParam({ name: 'userId', type: String })
+  @Roles('customer', 'admin')
   @Get(':userId/vouchers')
   getAllVouchers(@Param('userId') userId: string): Promise<Voucher[]> {
     return this.userService.getAllVouchers(userId);
@@ -107,6 +158,7 @@ export class UserController {
   @ApiOperation({ summary: 'Add a voucher to a user' })
   @ApiParam({ name: 'userId', type: String })
   @ApiParam({ name: 'voucherId', type: String })
+  @Roles('admin')
   @Post(':userId/vouchers/:voucherId')
   addVoucher(
     @Param('userId') userId: string,
@@ -118,6 +170,7 @@ export class UserController {
   @ApiOperation({ summary: 'Remove a voucher from a user' })
   @ApiParam({ name: 'userId', type: String })
   @ApiParam({ name: 'voucherId', type: String })
+  @Roles('admin')
   @Delete(':userId/vouchers/:voucherId')
   removeVoucher(
     @Param('userId') userId: string,
@@ -137,6 +190,7 @@ export class UserController {
     type: String,
     description: 'Phone number of the user',
   })
+  @Roles('customer', 'admin')
   @Patch(':phone')
   @ApiBody({ type: UpdateUserDto })
   async update(
@@ -150,6 +204,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User has been deleted.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
+  @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.userService.remove(id);
@@ -170,6 +225,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'Order has been created.' })
   @ApiResponse({ status: 404, description: 'User or address not found.' })
   @ApiResponse({ status: 400, description: 'Some products are out of stock.' })
+  @Roles('customer', 'admin')
   @Post(':userId/checkout')
   @ApiQuery({
     name: 'voucherName',
@@ -189,6 +245,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'List of products in the cart' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'userId', type: String, description: 'ID of the user' })
+  @Roles('customer', 'admin')
   @Get(':userId/cart')
   async getCartProducts(@Param('userId') userId: string) {
     return this.userService.getCartProducts(userId);
@@ -201,6 +258,7 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: 'User or product not found.' })
   @ApiResponse({ status: 400, description: 'Invalid product or user.' })
+  @Roles('customer', 'admin')
   @Post(':userId/cart/:productId')
   async addToCart(
     @Param('userId') userId: string,
@@ -221,6 +279,7 @@ export class UserController {
     type: String,
     description: 'ID of the product to remove from the cart',
   })
+  @Roles('customer', 'admin')
   @Delete(':userId/remove/:productId')
   async removeFromCart(
     @Param('userId') userId: string,
