@@ -13,6 +13,8 @@ import { Category } from 'src/category/entities/category.entity';
 import { validate as uuidValidate } from 'uuid';
 import { Brand } from 'src/brand/entities/brand.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { Order } from 'src/order/entities/order.entity';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 
 @Injectable()
 export class ProductService {
@@ -205,20 +207,6 @@ export class ProductService {
 
     return { data, total };
   }
-  // async findTopSellingProducts(): Promise<
-  //   { product: Product; numberOfSales: number }[]
-  // > {
-  //   const products = await this.productRepository.find();
-
-  //   const sortedProducts = products.sort(
-  //     (a, b) => b.numberOfSales - a.numberOfSales,
-  //   );
-
-  //   return sortedProducts.map((product) => ({
-  //     product: product,
-  //     numberOfSales: product.numberOfSales || 0,
-  //   }));
-  // }
 
   async getFlashSales(
     page: number,
@@ -407,11 +395,41 @@ export class ProductService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.productRepository.delete(id);
+    await this.productRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        // Find orders containing the product
+        const orders = await transactionalEntityManager
+          .createQueryBuilder(Order, 'order')
+          .leftJoinAndSelect('order.products', 'product')
+          .where('product.id = :id', { id })
+          .getMany();
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
+        // Remove the product from each order
+        for (const order of orders) {
+          order.products = order.products.filter(
+            (product) => product.id !== id,
+          );
+          await transactionalEntityManager.save(order);
+        }
+        // Delete related cart items
+        const cartItems = await transactionalEntityManager
+          .createQueryBuilder(CartItem, 'cartItem')
+          .leftJoinAndSelect('cartItem.product', 'product')
+          .where('product.id = :id', { id })
+          .getMany();
+
+        for (const cartItem of cartItems) {
+          await transactionalEntityManager.remove(cartItem);
+        }
+
+        // Delete the product
+        const result = await transactionalEntityManager.delete(Product, id);
+
+        if (result.affected === 0) {
+          throw new NotFoundException(`Product with ID ${id} not found`);
+        }
+      },
+    );
   }
 
   async searchProductsByName(
