@@ -111,6 +111,16 @@ export class BrandService {
 
   async remove(id: string) {
     try {
+      const productsWithBrand = await this.productRepository
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.brand', 'brand')
+        .where('brand.id = :id', { id })
+        .getMany();
+
+      for (const product of productsWithBrand) {
+        product.brand = null;
+        await this.productRepository.save(product);
+      }
       const result = await this.brandRepository.delete(id);
       if (result.affected === 0) {
         throw new NotFoundException(`Brand with id ${id} not found`);

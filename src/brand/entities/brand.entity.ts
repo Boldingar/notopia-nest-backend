@@ -12,6 +12,8 @@ export class Brand {
   @Column('text', { nullable: true })
   brandImgUrl: string;
 
-  @OneToMany(() => Product, (product) => product.brand)
+  @OneToMany(() => Product, (product) => product.brand, {
+    onDelete: 'SET NULL',
+  })
   products: Product[];
 }

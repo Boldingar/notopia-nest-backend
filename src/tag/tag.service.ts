@@ -101,6 +101,7 @@ export class TagService {
 
   async remove(id: string) {
     try {
+
       const result = await this.tagRepository.delete(id);
       if (result.affected === 0) {
         throw new NotFoundException(`Tag with id ${id} not found`);
