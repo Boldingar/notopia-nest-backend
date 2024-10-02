@@ -147,17 +147,6 @@ export class DeliveryController {
   @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    try {
-      const result = await this.deliveryService.remove(+id);
-      if (!result) {
-        throw new HttpException('Delivery not found', HttpStatus.NOT_FOUND);
-      }
-      return result;
-    } catch (error) {
-      throw new HttpException(
-        'Failed to delete delivery',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return this.deliveryService.remove(id);
   }
 }
