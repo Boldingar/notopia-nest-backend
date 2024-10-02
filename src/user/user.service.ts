@@ -85,12 +85,16 @@ export class UserService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.userRepository.delete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    const user = await this.userRepository.findOne({ where: { id, isDeleted: false } });
+  
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found or already deleted`);
     }
+  
+    user.isDeleted = true;
+    await this.userRepository.save(user);  // Mark the user as deleted
   }
+  
   async emptyCart(userId: string): Promise<{ message: string; user: User }> {
     const user = await this.userRepository.findOne({
       where: { id: userId },

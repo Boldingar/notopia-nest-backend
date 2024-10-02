@@ -20,7 +20,7 @@ export class AuthenticationService {
     const { phoneNumber } = loginDto;
 
     const user = await this.userRepository.findOne({
-      where: { phone: phoneNumber },
+      where: { phone: phoneNumber, isDeleted: false },
     });
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
@@ -42,7 +42,7 @@ export class AuthenticationService {
     const { phoneNumber } = loginDto;
 
     const delivery = await this.deliveryRepository.findOne({
-      where: { phone: phoneNumber },
+      where: { phone: phoneNumber, isDeleted: false },
     });
 
     if (!delivery) throw new UnauthorizedException('Invalid credentials');

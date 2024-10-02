@@ -30,11 +30,12 @@ import { join } from 'path';
 import { Roles } from 'src/decorators/Role.decorator';
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, join(__dirname, '..', '..', 'src', 'images', 'categories')); 
+    cb(null, join(__dirname, '..', '..', 'src', 'images', 'categories'));
   },
   filename: (req, file, cb) => {
-    const ext = file.mimetype.split('/')[1];
-    cb(null, `category-${uuidv4()}.${ext}`);
+    const ext = file.originalname.split('.').pop(); // Get the extension from the original file name
+    const uniqueFileName = `category-${uuidv4()}.${ext}`;
+    cb(null, uniqueFileName);
   },
 });
 @ApiTags('category')

@@ -126,16 +126,14 @@ export class DeliveryService {
     }
   }
 
-  async remove(id: number) {
-    try {
-      const result = await this.deliveryRepository.delete(id);
-      if (result.affected === 0) {
-        throw new NotFoundException(`Delivery with ID ${id} not found`);
-      }
-      return result;
-    } catch (error) {
-      console.error('Error deleting delivery:', error);
-      throw new InternalServerErrorException('Failed to delete delivery');
-    }
+  async remove(id: string) {
+    const delivery = await this.deliveryRepository.findOne({ where: { id, isDeleted: false } });
+
+  if (!delivery) {
+    throw new NotFoundException(`User with ID ${id} not found or already deleted`);
+  }
+
+  delivery.isDeleted = true;
+  await this.deliveryRepository.save(delivery);  // Mark the user as deleted
   }
 }

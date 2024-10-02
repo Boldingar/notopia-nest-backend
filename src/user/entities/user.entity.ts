@@ -62,6 +62,9 @@ export class User {
   @JoinTable()
   vouchers: Voucher[];
 
+  @Column({ default: false })
+  isDeleted: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
