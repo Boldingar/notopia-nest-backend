@@ -204,7 +204,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User has been deleted.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiParam({ name: 'id', type: String, description: 'ID of the user' })
-  @Roles('admin')
+  @Roles('admin', 'customer')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.userService.remove(id);
