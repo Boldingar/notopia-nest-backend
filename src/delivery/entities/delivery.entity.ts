@@ -43,4 +43,7 @@ export class Delivery {
 
   @Column({ type: 'timestamp', nullable: true })
   dateOfAssignment?: Date;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 }
