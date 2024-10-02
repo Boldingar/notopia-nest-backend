@@ -86,7 +86,9 @@ export class Product {
   })
   linkedProducts: Product[];
 
-  @ManyToOne(() => Brand, (brand) => brand.products)
+  @ManyToOne(() => Brand, (brand) => brand.products, {
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'brandId' })
   brand: Brand;
 

@@ -98,7 +98,7 @@ export class ProductController {
   }> {
     return this.productService.findTopSellingProducts(page, limit);
   }
-
+  
   @ApiOperation({ summary: 'Get new arrivals in the last 5 days' })
   @ApiResponse({
     status: 200,
@@ -234,6 +234,7 @@ export class ProductController {
   @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
+    console.log(id);
     return this.productService.remove(id);
   }
 

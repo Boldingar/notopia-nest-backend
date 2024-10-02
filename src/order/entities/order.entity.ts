@@ -1,7 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable, CreateDateColumn } from 'typeorm';
-import { Product } from 'src/product/entities/product.entity'; 
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  CreateDateColumn,
+} from 'typeorm';
+import { Product } from 'src/product/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Delivery } from 'src/delivery/entities/delivery.entity';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 
 @Entity()
 export class Order {
@@ -11,9 +20,9 @@ export class Order {
   @ManyToOne(() => User, (user) => user.orders)
   user: User;
 
-  @ManyToMany(() => Product, { eager: true })
+  @ManyToMany(() => CartItem, { eager: true })
   @JoinTable()
-  products: Product[];
+  products: CartItem[];
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
@@ -26,6 +35,9 @@ export class Order {
 
   @Column({ nullable: true })
   deliveryId: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  scheduleDelivery?: Date;
 
   @Column({ type: 'timestamp', nullable: true })
   deliveredAt?: Date;

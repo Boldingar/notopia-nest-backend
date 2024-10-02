@@ -233,12 +233,24 @@ export class UserController {
     required: false,
     description: 'Optional voucher name to apply a discount',
   })
+  @ApiQuery({
+    name: 'scheduleDelivery',
+    type: String,
+    required: false,
+    description: 'Optional Schedule for delivery date',
+  })
   async checkOut(
     @Param('userId') userId: string,
     @Query('addressIndex') addressIndex: number,
     @Query('voucherName') voucherName?: string,
+    @Query('scheduleDelivery') scheduleDelivery?: Date,
   ) {
-    return this.userService.checkOut(userId, addressIndex, voucherName);
+    return this.userService.checkOut(
+      userId,
+      addressIndex,
+      voucherName,
+      scheduleDelivery,
+    );
   }
 
   @ApiOperation({ summary: "Get all products in the user's cart" })
