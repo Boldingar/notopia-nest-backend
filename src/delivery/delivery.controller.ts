@@ -50,25 +50,17 @@ export class DeliveryController {
     }
   }
 
-  @ApiOperation({ summary: 'Get orders by status' })
-  @ApiParam({
-    name: 'status',
-    enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
-    required: true,
-  })
-  @ApiResponse({ status: 200, description: 'List of orders by status' })
-  @ApiResponse({
-    status: 404,
-    description: 'No orders found for the given status',
-  })
-  @Roles('stock', 'delivery')
-  @Get(':status')
-  async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
+  @ApiOperation({ summary: 'Get all deliveries' })
+  @ApiResponse({ status: 200, description: 'List of all deliveries' })
+  @ApiResponse({ status: 404, description: 'No deliveries found' })
+  @Roles('admin', 'delivery', 'stock')
+  @Get()
+  async findAll(): Promise<Delivery[]> {
     try {
-      return await this.deliveryService.getOrdersByStatus(status);
+      return await this.deliveryService.findAll();
     } catch (error) {
       throw new HttpException(
-        'Failed to get orders by status',
+        'Failed to get deliveries',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -77,12 +69,17 @@ export class DeliveryController {
   @ApiOperation({ summary: 'Get details of a specific delivery' })
   @ApiResponse({ status: 200, description: 'Delivery details' })
   @ApiResponse({ status: 404, description: 'Delivery not found' })
-  @ApiParam({ name: 'id', type: String, description: 'ID of the delivery' })
+  @ApiParam({
+    name: 'phone',
+    type: String,
+    description: 'phone of the delivery',
+  })
   @Roles('admin', 'delivery', 'stock')
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Delivery> {
+  @Get(':phone')
+  async findOne(@Param('phone') phone: string): Promise<Delivery> {
     try {
-      const delivery = await this.deliveryService.findOne(id);
+
+      const delivery = await this.deliveryService.findOne(phone);
       if (!delivery) {
         throw new HttpException('Delivery not found', HttpStatus.NOT_FOUND);
       }
@@ -95,17 +92,39 @@ export class DeliveryController {
     }
   }
 
-  @ApiOperation({ summary: 'Get all deliveries' })
-  @ApiResponse({ status: 200, description: 'List of all deliveries' })
-  @ApiResponse({ status: 404, description: 'No deliveries found' })
-  @Roles('admin', 'delivery', 'stock')
-  @Get()
-  async findAll(): Promise<Delivery[]> {
+  @ApiOperation({ summary: 'Delete a delivery' })
+  @ApiResponse({ status: 200, description: 'Delivery successfully deleted' })
+  @ApiResponse({ status: 404, description: 'Delivery not found' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID of the delivery to be deleted',
+  })
+  @Roles('admin')
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.deliveryService.remove(id);
+  }
+
+  @ApiOperation({ summary: 'Get orders by status' })
+  @ApiParam({
+    name: 'status',
+    enum: ['ordered', 'in-progress', 'picked-up', 'delivered'],
+    required: true,
+  })
+  @ApiResponse({ status: 200, description: 'List of orders by status' })
+  @ApiResponse({
+    status: 404,
+    description: 'No orders found for the given status',
+  })
+  @Roles('stock', 'delivery')
+  @Get('status/:status')
+  async getOrdersByStatus(@Param('status') status: string): Promise<Order[]> {
     try {
-      return await this.deliveryService.findAll();
+      return await this.deliveryService.getOrdersByStatus(status);
     } catch (error) {
       throw new HttpException(
-        'Failed to get deliveries',
+        'Failed to get orders by status',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -134,19 +153,5 @@ export class DeliveryController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  @ApiOperation({ summary: 'Delete a delivery' })
-  @ApiResponse({ status: 200, description: 'Delivery successfully deleted' })
-  @ApiResponse({ status: 404, description: 'Delivery not found' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    description: 'ID of the delivery to be deleted',
-  })
-  @Roles('admin')
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.deliveryService.remove(id);
   }
 }

@@ -21,6 +21,7 @@ export class AuthenticationService {
 
     const user = await this.userRepository.findOne({
       where: { phone: phoneNumber, isDeleted: false },
+      relations: ['cart', 'wishlist', 'addresses', 'orders'],
     });
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
