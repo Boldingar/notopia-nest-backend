@@ -143,6 +143,7 @@ export class CategoryController {
     @Body() updateCategoryDto: UpdateCategoryDto,
     @UploadedFile() categoryImg: Express.Multer.File,
   ) {
+
     if (!categoryImg) {
       return this.categoryService.update(id, updateCategoryDto);
     }
