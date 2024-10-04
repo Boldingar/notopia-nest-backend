@@ -79,7 +79,6 @@ import { AddressController } from './address/address.controller';
           CartItem,
         ],
         synchronize: true,
-        logging: true
       }),
     }),
     UserModule,
