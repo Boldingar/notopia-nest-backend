@@ -94,7 +94,7 @@ export class DeliveryService {
 
       let status: string;
       if (delivery.flag === 'stock') {
-        status = 'in progress';
+        status = 'in-progress';
       } else if (delivery.flag === 'delivery') {
         if (!delivery.currentOrders) {
           delivery.currentOrders = [];
@@ -105,7 +105,7 @@ export class DeliveryService {
         );
 
         if (existingOrderIndex === -1) {
-          status = 'picked up';
+          status = 'picked-up';
           delivery.currentOrders.push(order);
           delivery.dateOfAssignment = new Date();
         } else {

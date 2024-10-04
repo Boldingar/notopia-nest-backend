@@ -78,7 +78,6 @@ export class DeliveryController {
   @Get(':phone')
   async findOne(@Param('phone') phone: string): Promise<Delivery> {
     try {
-
       const delivery = await this.deliveryService.findOne(phone);
       if (!delivery) {
         throw new HttpException('Delivery not found', HttpStatus.NOT_FOUND);
