@@ -174,6 +174,7 @@ export class ProductService {
     const [result, total] = await this.productRepository.findAndCount({
       take,
       skip,
+      relations: ['categories'],
     });
     return { data: result, total };
   }
@@ -192,6 +193,7 @@ export class ProductService {
     const [products, total] = await this.productRepository.findAndCount({
       take,
       skip,
+      relations: ['categories'],
     });
 
     // Sort the products by number of sales
@@ -221,6 +223,7 @@ export class ProductService {
       },
       take,
       skip,
+      relations: ['categories'],
     });
     return { data, total };
   }
@@ -237,6 +240,7 @@ export class ProductService {
       // relations: ['categories', 'linkedProducts'],
       take,
       skip,
+      relations: ['categories'],
     });
 
     return { data: result, total };
@@ -254,6 +258,7 @@ export class ProductService {
       // relations: ['categories', 'linkedProducts'],
       take,
       skip,
+      relations: ['categories'],
     });
 
     return { data: result, total };
@@ -282,7 +287,7 @@ export class ProductService {
 
     const product = await this.productRepository.findOne({
       where: { id: productId },
-      relations: ['linkedProducts'],
+      relations: ['linkedProducts', 'categories'],
     });
 
     if (!product) {
@@ -315,6 +320,7 @@ export class ProductService {
       where: { brand },
       take,
       skip,
+      relations: ['categories'],
     });
 
     return { data: result, total };
@@ -446,6 +452,7 @@ export class ProductService {
       where: { name: ILike(`%${name}%`) },
       take,
       skip,
+      relations: ['categories'],
     });
 
     return { data: result, total };
@@ -461,7 +468,7 @@ export class ProductService {
   }> {
     const product = await this.productRepository.findOne({
       where: { id: productId },
-      relations: ['tags'],
+      relations: ['tags', 'categories'],
     });
 
     if (!product) {
@@ -522,6 +529,7 @@ export class ProductService {
       },
       take,
       skip,
+      relations: ['categories'],
     });
 
     return { data, total };
