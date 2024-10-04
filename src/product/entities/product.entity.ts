@@ -23,7 +23,7 @@ export class Product {
   id: string;
 
   @Column({ length: 100 })
-  description: string;
+  description?: string;
 
   @Column('decimal', { precision: 5, scale: 2 })
   discountPercentage: number;

@@ -9,7 +9,7 @@ import {
   IsEnum,
   IsNotEmpty,
 } from 'class-validator';
-import { ProductType } from '../entities/product.entity'; 
+import { ProductType } from '../entities/product.entity';
 
 export class CreateProductDto {
   @ApiProperty({
@@ -20,9 +20,11 @@ export class CreateProductDto {
 
   @ApiProperty({
     example: 'Sample Product',
+    required: false,
   })
   @IsString()
-  description: string;
+  @IsOptional()
+  description?: string;
 
   @ApiProperty({
     example: 'http://example.com/image3.jpg',
