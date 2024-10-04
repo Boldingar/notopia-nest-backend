@@ -57,11 +57,13 @@ export class DeliveryService {
     }
   }
 
-  async findOne(id: string): Promise<Delivery> {
+  async findOne(phone: string): Promise<Delivery> {
     try {
-      const delivery = await this.deliveryRepository.findOne({ where: { id } });
+      const delivery = await this.deliveryRepository.findOne({
+        where: { phone },
+      });
       if (!delivery) {
-        throw new NotFoundException(`Delivery with ID ${id} not found`);
+        throw new NotFoundException(`Delivery with phone ${phone} not found`);
       }
       return delivery;
     } catch (error) {
@@ -92,7 +94,7 @@ export class DeliveryService {
 
       let status: string;
       if (delivery.flag === 'stock') {
-        status = 'in progress';
+        status = 'in-progress';
       } else if (delivery.flag === 'delivery') {
         if (!delivery.currentOrders) {
           delivery.currentOrders = [];
@@ -103,7 +105,7 @@ export class DeliveryService {
         );
 
         if (existingOrderIndex === -1) {
-          status = 'picked up';
+          status = 'picked-up';
           delivery.currentOrders.push(order);
           delivery.dateOfAssignment = new Date();
         } else {
@@ -127,13 +129,17 @@ export class DeliveryService {
   }
 
   async remove(id: string) {
-    const delivery = await this.deliveryRepository.findOne({ where: { id, isDeleted: false } });
+    const delivery = await this.deliveryRepository.findOne({
+      where: { id, isDeleted: false },
+    });
 
-  if (!delivery) {
-    throw new NotFoundException(`User with ID ${id} not found or already deleted`);
-  }
+    if (!delivery) {
+      throw new NotFoundException(
+        `User with ID ${id} not found or already deleted`,
+      );
+    }
 
-  delivery.isDeleted = true;
-  await this.deliveryRepository.save(delivery);  // Mark the user as deleted
+    delivery.isDeleted = true;
+    await this.deliveryRepository.save(delivery); // Mark the user as deleted
   }
 }

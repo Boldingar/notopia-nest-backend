@@ -67,6 +67,19 @@ export class UserService {
       relations: ['cart', 'wishlist', 'addresses', 'orders'],
     });
   }
+  
+  async getWishlist(phone: string): Promise<Product[]> {
+    const user = await this.userRepository.findOne({
+      where: { phone },
+      relations: ['wishlist'], // Load the wishlist relation
+    });
+  
+    if (!user) {
+      throw new NotFoundException(`User with phone number ${phone} not found`);
+    }
+  
+    return user.wishlist; // Return the wishlist
+  }
 
   async update(phone: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.findOne({ where: { phone } });
