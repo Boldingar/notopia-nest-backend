@@ -24,6 +24,7 @@ import { User } from './entities/user.entity';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import { Voucher } from 'src/voucher/entities/voucher.entity';
 import { Roles } from 'src/decorators/Role.decorator';
+import { Product } from 'src/product/entities/product.entity';
 
 @ApiTags('user')
 @ApiBearerAuth('Bearer')
@@ -85,6 +86,24 @@ export class UserController {
     @Param('productId') productId: string,
   ): Promise<User> {
     return this.userService.removeFromWishlist(userId, productId);
+  }
+
+  @ApiOperation({ summary: "Get the user's wishlist" })
+  @ApiResponse({
+    status: 200,
+    description: 'Wishlist retrieved successfully.',
+    type: [Product],
+  })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiParam({
+    name: 'phone',
+    type: String,
+    description: 'Phone number of the user',
+  })
+  @Roles('admin', 'customer')
+  @Get(':phone/wishlist')
+  async getWishlist(@Param('phone') phone: string): Promise<Product[]> {
+    return this.userService.getWishlist(phone);
   }
 
   @ApiOperation({ summary: 'Get the number of users who already ordered once' })
