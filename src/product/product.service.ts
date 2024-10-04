@@ -331,12 +331,14 @@ export class ProductService {
     }
     let parsedLinkedProductEntities: string[] = [];
     let tempId2 = '';
-    for (let i = 0; i < linkedProducts.length; i++) {
-      if (linkedProducts[i] === ',') {
-        parsedLinkedProductEntities.push(tempId2.trim());
-        tempId2 = '';
-      } else {
-        tempId2 += linkedProducts[i];
+    if (linkedProducts) {
+      for (let i = 0; i < linkedProducts.length; i++) {
+        if (linkedProducts[i] === ',') {
+          parsedLinkedProductEntities.push(tempId2.trim());
+          tempId2 = '';
+        } else {
+          tempId2 += linkedProducts[i];
+        }
       }
     }
     if (tempId2) {
