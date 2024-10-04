@@ -8,7 +8,8 @@ import {
   IsUUID,
   IsEnum,
 } from 'class-validator';
-import { ProductType } from '../entities/product.entity'; 
+import { Transform } from 'class-transformer';
+import { ProductType } from '../entities/product.entity';
 
 export class UpdateProductDto {
   @ApiProperty({
@@ -17,6 +18,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => (value === '' ? undefined : value)) // Exclude empty string
   name?: string;
 
   @ApiProperty({
@@ -25,6 +27,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => (value === '' ? undefined : value)) // Exclude empty string
   description?: string;
 
   @ApiProperty({
@@ -33,6 +36,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => (value === '' ? undefined : value)) // Exclude empty string
   mainImage?: string;
 
   @ApiProperty({
@@ -94,6 +98,7 @@ export class UpdateProductDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => (value === '' ? undefined : value)) // Exclude empty string
   barcode?: string;
 
   @ApiProperty({
